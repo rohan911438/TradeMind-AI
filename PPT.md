@@ -161,7 +161,7 @@ To design and build a cloud-based platform that ingests timestamped market event
 | Throughput (laptop) | **3,159 events/s** with P99 71 µs |
 | Model macro-F1 (held-out, real NSE data) | **0.390** vs 0.248 baseline |
 | BUY/SELL hit-rate | **25.6%** vs 20.3% chance |
-| Testing | 17 unit + 67 end-to-end checks passing |
+| Testing | 18 unit + 116 end-to-end checks passing |
 
 Evaluation metrics used: P50/P95/P99 latency, throughput, dropped events, **precision, recall and macro-F1** (classification). Sharpe ratio and maximum drawdown are planned for strategy back-testing.
 

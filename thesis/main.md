@@ -79,7 +79,7 @@ We acknowledge the open-source communities behind Python, FastAPI, XGBoost, scik
 
 Financial markets generate continuous streams of trades, quotes, order-book updates and news. Turning this stream into useful decisions needs four things: reliable event capture, timely processing, an analytical model that is honest about its accuracy, and disciplined risk control. This project designs, implements, deploys and evaluates **TradeMind AI**, a cloud-based trading decision-support prototype built from three cooperating engines.
 
-**StreamX** is the market-data engine. It ingests a five-level order-book and trade stream for four NSE equities (RELIANCE, TCS, INFY, HDFCBANK) and stamps each event at three points with a monotonic nanosecond clock. It maintains in-memory market state (candles, best bid and offer, depth, order-book imbalance, volatility) and records every event to Parquet files through an asynchronous, batched writer. Because no free real-time NSE tick feed exists, the live stream is produced by a stochastic simulator seeded from real NSE prices and volatilities, and the system labels it as simulated. **PredictX** is the AI engine. It is a gradient-boosted tree model (XGBoost) trained on about 17,000 real 5-minute NSE bars, using ten look-ahead-free technical features and a purged chronological train/validation/test split. It produces BUY, SELL, HOLD or NO TRADE signals with per-prediction explanations derived from tree contributions. **RiskGuard** is a deterministic rule engine. It sizes each position by a 1% risk budget and an ATR-based stop, enforces risk/reward, single-stock, total-exposure and daily-loss limits, and returns APPROVED, REDUCED or REJECTED with human-readable reasons. A paper-trading broker gives every Google-authenticated user a ₹10,00,000 virtual account. The system is packaged as a single Docker image and runs on the Render cloud platform with continuous deployment from GitHub.
+**StreamX** is the market-data engine. It ingests a five-level order-book and trade stream for the 51 Nifty 50 blue-chip NSE equities and stamps each event at three points with a monotonic nanosecond clock. It maintains in-memory market state (candles, best bid and offer, depth, order-book imbalance, volatility) and records every event to Parquet files through an asynchronous, batched writer. Because no free real-time NSE tick feed exists, the live stream is produced by a stochastic simulator seeded from real NSE prices and volatilities, and the system labels it as simulated. **PredictX** is the AI engine. It is a gradient-boosted tree model (XGBoost) trained on about 17,000 real 5-minute NSE bars from four of these stocks, using ten look-ahead-free technical features and a purged chronological train/validation/test split. It produces BUY, SELL, HOLD or NO TRADE signals with per-prediction explanations derived from tree contributions. **RiskGuard** is a deterministic rule engine. It sizes each position by a 1% risk budget and an ATR-based stop, enforces risk/reward, single-stock, total-exposure and daily-loss limits, and returns APPROVED, REDUCED or REJECTED with human-readable reasons. A paper-trading broker gives every Google-authenticated user a ₹10,00,000 virtual account. The system is packaged as a single Docker image and runs on the Render cloud platform with continuous deployment from GitHub.
 
 Seven experiments evaluate the system:
 - **Capture.** Fixed-interval snapshots of the same stream hide 80–98% of events at a 100 ms interval, depending on the event rate.
@@ -359,7 +359,7 @@ TradeMind AI consumes market events from a controlled simulator seeded with real
 ## 3.4 Scope
 
 **In scope:**
-- real historical NSE 5-minute data for four large-cap stocks;
+- real historical NSE 5-minute data for the Nifty 50 blue chips (51 tickers), with the model trained and evaluated on four of them (RELIANCE, TCS, INFY, HDFCBANK);
 - a simulated live event stream seeded from it;
 - event processing, metrics and recording;
 - XGBoost signals with explanations;
@@ -426,7 +426,7 @@ The feed rates used in the experiments are experimental settings, not exchange-f
 | Item | Value in this project |
 |---|---|
 | Asset class / market | Cash equities, National Stock Exchange of India |
-| Instruments | RELIANCE, TCS, INFY, HDFCBANK |
+| Instruments | Model training and all experiments: RELIANCE, TCS, INFY, HDFCBANK. Tradable in the terminal: the Nifty 50 blue chips (51 tickers), with the model applied out of sample to the other 47 and labelled as such in the UI |
 | Historical data | Yahoo Finance via `yfinance`, 5-minute OHLCV, ~60-day availability window |
 | Live data | Simulated (labelled "SIMULATED" in the UI), seeded from the last real close and measured volatility |
 | Timestamp source | All latency timestamps come from one host's `time.perf_counter_ns()` (monotonic). No cross-host clock comparison is made, so clock offset and drift do not affect the measurements |
@@ -898,7 +898,7 @@ loop every 0.5 s:
 
 | # | Rule | Parameter | Effect |
 |---|---|---|---|
-| 1 | AI gate | NO TRADE or opposite signal → reject; HOLD → size × 0.5 | REJECTED / smaller size |
+| 1 | AI gate (advisory) | HOLD → size × 0.5; BUY against a SELL or NO TRADE signal → warning, size × 0.25, target at the minimum R:R | Smaller size, never a veto |
 | 2 | Daily loss limit | Realised loss today ≥ 3% of starting capital | REJECTED |
 | 3 | Stop-loss | $d = \max(1.5\,\text{ATR},\ 0.2\% \cdot \text{entry})$ | Defines risk per share |
 | 4 | Target and R:R | $m = \text{clip}(1.5 + 30(c - \tfrac13),\ 1,\ 4.5)$; R:R = m / 1.5; target = entry + d · R:R | REJECTED if R:R < 1.2 |
@@ -908,16 +908,21 @@ loop every 0.5 s:
 
 ```text
 Algorithm 3: RiskGuard.evaluate (BUY)
-if signal ∈ {NO_TRADE, SELL}: return REJECTED(reason)
 if realised_loss_today ≥ 3% · starting_cash: return REJECTED(reason)
-d ← max(1.5·ATR, 0.002·entry); rr ← reward_multiple(conf) / 1.5
+d ← max(1.5·ATR, 0.002·entry)
+against ← signal ∈ {NO_TRADE, SELL}
+rr ← 1.2 if against else reward_multiple(conf) / 1.5
 if rr < 1.2: return REJECTED(reason)
-q_risk ← floor(0.01·equity / d);  if signal = HOLD: q_risk ← q_risk // 2
+q_risk ← floor(0.01·equity / d)
+if against: q_risk ← q_risk // 4; add warning      # the user decides; RiskGuard only shrinks
+elif signal = HOLD: q_risk ← q_risk // 2
 allowed ← min(q_risk, single-stock room, total room, cash room)
 if allowed ≤ 0: return REJECTED(binding limit)
 approved ← min(requested or allowed, allowed)
 return (APPROVED if approved = requested else REDUCED), stop, target, rr, reasons
 ```
+
+The AI gate is advisory rather than a veto. An earlier version rejected every BUY that disagreed with the model, which user testing showed was frustrating: the user could not act on their own judgement even with a small position. Given the model's modest edge (Section 8.6), blocking such trades outright was not justified. The current rule lets the user trade against the AI but cuts the risk-based size to a quarter and sets the target at the minimum R:R, because no model edge supports a wider one. All other limits (daily loss, exposure caps, cash) still apply in full. Experiment E only simulates trades taken on BUY signals, so this change does not affect its results.
 
 The reward multiple grows with the model's edge over the uninformed level of 1/3. Because model confidences are compressed (mostly 0.34–0.42), a confidence of 0.40 gives a multiple of 3.5 and an R:R of 2.33. A confidence of 0.343 gives an R:R of 1.2, which is the minimum.
 
@@ -972,8 +977,8 @@ TradeMind-AI/
 │   ├── models/                # xgb_model.json, metrics.json (model card)
 │   ├── data/raw/              # cached NSE 5-minute bars (CSV), sources.json
 │   ├── static/                # index.html (landing), app.html (terminal), css/, js/, vendor/, img/
-│   ├── scripts/e2e_check.py   # 67 end-to-end checks
-│   └── tests/                 # 17 unit tests
+│   ├── scripts/e2e_check.py   # 116 end-to-end checks
+│   └── tests/                 # 18 unit tests
 ├── tools/tailwind/            # Tailwind build configuration
 ├── docs/                      # synopsis, SRS, architecture, demo guide, test report, deployment guide
 └── thesis/
@@ -1091,8 +1096,8 @@ CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forward
 
 | Layer | Tool | Count |
 |---|---|---|
-| Unit | pytest | 17 tests: 12 RiskGuard, 3 feature/label (including look-ahead), 2 broker P&L |
-| End-to-end | `scripts/e2e_check.py` (httpx + websockets) | 67 checks covering routing, market, PredictX, authentication and security, RiskGuard validation, full trade lifecycle with P&L reconciliation, account isolation, monitor and WebSockets |
+| Unit | pytest | 18 tests: 13 RiskGuard, 3 feature/label (including look-ahead), 2 broker P&L |
+| End-to-end | `scripts/e2e_check.py` (httpx + websockets) | 116 checks (51 of them one PredictX check per stock) covering routing, market, PredictX, authentication and security, RiskGuard validation, full trade lifecycle with P&L reconciliation, account isolation, monitor and WebSockets |
 | Manual / browser | Chrome, desktop and 390 px mobile | All six screens and the landing page |
 
 The defects found during testing and their fixes are listed in Table 8.13 (Section 8.12).
@@ -1136,7 +1141,7 @@ All raw results are in `thesis/benchmarks/results/*.json`, and the commands to r
 
 ## 8.3 Workload Design
 
-- **Event source.** The production `FeedSimulator` with a fixed seed. Each event is one trade print plus a five-level book for one of the four symbols, in round-robin order.
+- **Event source.** The production `FeedSimulator` with a fixed seed. Each event is one trade print plus a five-level book for one of the four evaluated symbols, in round-robin order (the experiments pin `MODEL_SYMBOLS` so they stay reproducible after the tradable list grew to 51).
 - **Rates.** 100, 500, 1,000, 2,000, 5,000, 10,000 and 20,000 events/s (Experiment C), 1,000 events/s (Experiment B, paced) and 200 / 2,000 events/s (Experiment A).
 - **Procedure.** Each run has a 2-second warm-up followed by a 10-second measurement window. Experiment C repeats every rate 3 times and reports the mean, and the per-trial values are kept in the JSON. Experiment B's maximum-throughput ("drain") test pre-generates events and processes them as fast as possible, reporting the median of 3 repeats after a warm-up pass.
 - **Integrity.** After each run, the recorded Parquet (or SQLite) rows are read back and compared with the number of events processed: row count, unique `seq` and duplicates. The run also checks that generated = processed + dropped + left in queue.
@@ -1449,8 +1454,8 @@ Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum draw
 
 | Suite | Checks | Local | Production |
 |---|---|---|---|
-| Unit tests (pytest) | 17 | 17 / 17 pass | n/a |
-| End-to-end checks (`e2e_check.py`) | 67 | 67 / 67 pass | 67 / 67 pass |
+| Unit tests (pytest) | 18 | 18 / 18 pass | n/a |
+| End-to-end checks (`e2e_check.py`) | 116 | 116 / 116 pass | 116 / 116 pass |
 | Browser, desktop (6 screens + landing page) | manual | pass | pass |
 | Browser, 390 px mobile width | manual | no horizontal overflow | no horizontal overflow |
 
@@ -1474,6 +1479,8 @@ The end-to-end suite verifies, among other things:
 | 8 | Close-position clicks were lost | Browser automation | Table re-rendered every 3 s, replacing the buttons | Delegated click handler plus a double-click guard |
 | 9 | Large latency values overflowed tiles | Visual check | Values always formatted in µs | Switch to ms above 1,000 µs |
 | 10 | Sign-in screen appeared late | Visual check | Authentication started after the chart loaded | Authentication starts on page load |
+| 11 | User could not buy when the AI said SELL or NO TRADE | User testing | RiskGuard rule 1 rejected every BUY that disagreed with the model | Advisory gate: warning, 25% size, minimum-R:R target (Section 6.10) |
+| 12 | Only four stocks could be traded | User testing | Symbol list fixed to the four training stocks | Tradable universe extended to the Nifty 50 (51 tickers), with a searchable watchlist; the model stays trained on the four |
 
 ## 8.13 Chapter Summary
 
@@ -1486,7 +1493,7 @@ The end-to-end suite verifies, among other things:
 | Trading value after costs | Exp. E | RiskGuard improves the same signals at every cost level, but no active strategy beats buy-and-hold at a realistic 10 bps |
 | Decision-path cost | Exp. F | RiskGuard 22 µs; full signal 48 ms, half of it feature recomputation |
 | Cloud behaviour | Exp. G | ~160 ms network floor; cloud pipeline P50 8.4 µs; 154k events with no drops |
-| Correctness | Tests | 17 unit + 67 end-to-end checks passing locally and in production |
+| Correctness | Tests | 18 unit + 116 end-to-end checks passing locally and in production |
 
 <div style="page-break-after: always;"></div>
 
@@ -1543,7 +1550,7 @@ TradeMind AI was designed, built, deployed and evaluated as a complete cloud-bas
 - **StreamX** captures every event with three nanosecond timestamps, keeps the hot path in memory and records asynchronously. On a two-core laptop it sustained 5,000 events/s with a P99 state-update latency of 29 µs and no data loss, and it saturated at about 8,800 events/s on one CPU core. In the cloud it ran at a median of 8.4 µs. Experiments showed that fixed 100 ms snapshots would hide 80–98% of the same events, and that synchronous fully durable writes would cut throughput to about 60 events/s.
 - **PredictX** trains an explainable XGBoost model on about 17,000 real NSE 5-minute bars with a purged chronological split. Its macro-F1 is 0.390 against 0.248 for the majority-class baseline, and its directional hit-rate is 25.6% against 20.4% chance. It matches, but does not beat, logistic regression.
 - **RiskGuard** turns every signal into a sized, bounded and explained decision in about 22 µs, and measurably improves the outcome of the same signals.
-- The **paper-trading platform**, with Google sign-in, is publicly deployed with continuous delivery and has passed 17 unit tests and 67 end-to-end checks in production.
+- The **paper-trading platform**, with Google sign-in, is publicly deployed with continuous delivery and has passed 18 unit tests and 116 end-to-end checks in production.
 
 The project's value lies in demonstrating a measurable, reproducible data-to-decision pipeline and reporting it honestly, including the finding that the model's small edge does not survive realistic transaction costs. It does not claim institutional HFT performance.
 
@@ -1666,7 +1673,7 @@ Insert genuine screenshots captured from the live application (https://trademind
 7. StreamX Monitor at 200 and at 3,000 events/s (throughput chart, P50/P95/P99, histogram)
 8. Architecture screen
 9. Render dashboard showing the deployment and the health check
-10. Terminal output of `pytest` (17 passed) and `e2e_check` (67/67)
+10. Terminal output of `pytest` (18 passed) and `e2e_check` (116/116)
 
 ## Appendix 6: Team Contribution
 
@@ -1684,7 +1691,7 @@ From the repository root, on Windows, with the backend virtual environment:
 
 ```powershell
 cd backend; python -m venv .venv; .\.venv\Scripts\pip install -r requirements.txt matplotlib psutil; cd ..
-backend\.venv\Scripts\python.exe -m pytest backend\tests -q              # 17 unit tests
+backend\.venv\Scripts\python.exe -m pytest backend\tests -q              # 18 unit tests
 backend\.venv\Scripts\python.exe thesis\benchmarks\bench_stream.py       # env + Experiments A, B, C (~8 min)
 backend\.venv\Scripts\python.exe thesis\benchmarks\bench_model.py        # Experiments D, E, F (~3 min)
 backend\.venv\Scripts\python.exe thesis\benchmarks\bench_api.py          # Experiment G (local + cloud)

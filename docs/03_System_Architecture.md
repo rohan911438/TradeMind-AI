@@ -19,7 +19,7 @@ flowchart TB
         subgraph StreamX
             SIM["FeedSimulator"] -->|publish| BUS["InMemoryEventBus<br/>(EventBus interface)"]
             BUS -->|get| PROC["Processor loop"]
-            PROC --> ST["SymbolState x4"]
+            PROC --> ST["SymbolState x51"]
             PROC --> MET["Metrics"]
             PROC --> REC["Recorder"]
         end
@@ -68,7 +68,7 @@ flowchart TB
 2. The processor takes the event, sets `ingest_ns`, and calls `SymbolState.update()`. That updates price, book, imbalance and the current candle, and rolls to a new candle every `BAR_SECONDS` (10 s). The processor then sets `processed_ns`.
 3. `Metrics.observe()` stores *processing* latency (processed − ingest) and *end-to-end* latency (processed − created) in 10,000-slot ring buffers. Percentiles are computed once per second.
 4. `Recorder.add()` buffers the event. Every 5 s (or 20,000 events) a batch is written to Parquet in a background thread.
-5. `/ws/market` sends a snapshot of all four symbols every 250 ms; `/ws/monitor` sends metrics every second.
+5. `/ws/market` sends a snapshot of all 51 symbols every 250 ms (about 20 KB per message); `/ws/monitor` sends metrics every second.
 
 ### 2.2 One paper order
 ```mermaid

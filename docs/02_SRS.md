@@ -20,7 +20,7 @@
 ### 2.1 StreamX: data engine
 | ID | Requirement | Status |
 |---|---|---|
-| SX-1 | Simulated tick + 5-level order-book stream for 4 NSE stocks, seeded from the last real price | ✅ |
+| SX-1 | Simulated tick + 5-level order-book stream for the 51 Nifty 50 stocks, seeded from the last real price | ✅ |
 | SX-2 | Feed rate configurable at runtime (10 to 5,000 events/s; API accepts 1–20,000) | ✅ |
 | SX-3 | Every event stamped with created / ingested / processed nanosecond timestamps | ✅ |
 | SX-4 | Market state per symbol: last, bid/ask, spread, book, change %, candles | ✅ |
@@ -56,7 +56,7 @@
 | RG-3 | Target from a reward multiple scaled by model edge; reject if R:R < 1.2 | ✅ |
 | RG-4 | Exposure caps: 20% per stock, 60% total, never more than available cash; reduce quantity to fit | ✅ |
 | RG-5 | Reject new buys once realised loss today ≥ 3% of starting capital | ✅ |
-| RG-6 | AI gate: NO TRADE or opposite signal → reject; HOLD → half size | ✅ |
+| RG-6 | Advisory AI gate: HOLD → half size; buying against SELL / NO TRADE → warning, 25% size, minimum-R:R target | ✅ |
 | RG-7 | SELL (closing) always allowed up to the held quantity; oversell reduced | ✅ |
 | RG-8 | Risk level LOW / MODERATE / HIGH from volatility and exposure | ✅ |
 | RG-9 | Every verdict carries human-readable reasons | ✅ |
@@ -116,7 +116,7 @@
 | NF-5 | Recorder never blocks processing | async batched writes | ✅ background thread |
 | NF-6 | Reproducibility | fixed seeds, pinned minimum versions | ✅ |
 | NF-7 | Transparency | disclaimer on signals; simulated data labelled | ✅ |
-| NF-8 | Testability | automated unit + e2e tests | ✅ 17 + 67 |
+| NF-8 | Testability | automated unit + e2e tests | ✅ 18 + 116 |
 | NF-9 | Security | no secrets in repo; verified tokens; session cookies | ✅ |
 | NF-10 | Portability | runs on Windows/Linux/Docker | ✅ |
 

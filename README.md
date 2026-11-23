@@ -42,7 +42,7 @@ Every user signs in with **Google** (or as a guest) and receives a personal **�
 ## ✨ Features
 
 **Market terminal**
-- Live candlestick chart (TradingView Lightweight Charts), watchlist, 5-level order book and buy/sell-pressure gauge for **RELIANCE, TCS, INFY, HDFCBANK**
+- Live candlestick chart (TradingView Lightweight Charts), watchlist, 5-level order book and buy/sell-pressure gauge for all **Nifty 50 blue chips** (51 tickers, searchable)
 - Real NSE history (5-minute bars) continued by a live simulated feed, clearly labelled in the UI
 
 **AI signals**
@@ -159,8 +159,8 @@ Trained on **~17,000 real 5-minute bars** (4 stocks, late Aug to 23 Nov 2026) us
 
 ### Quality
 
-- ✅ **17 unit tests**: risk rules, feature look-ahead safety, broker P&L arithmetic
-- ✅ **67 end-to-end checks**, passing locally and in production: routes, auth and session security, input validation, a full trade lifecycle with P&L reconciliation, account isolation, WebSockets
+- ✅ **18 unit tests**: risk rules, feature look-ahead safety, broker P&L arithmetic
+- ✅ **116 end-to-end checks**, passing locally and in production: routes, auth and session security, input validation, a full trade lifecycle with P&L reconciliation, account isolation, WebSockets
 
 See [`docs/06_Test_Report.md`](docs/06_Test_Report.md).
 

@@ -6,8 +6,8 @@
 
 | Suite | Checks | Local | Production |
 |---|---|---|---|
-| Unit tests (`pytest`) | 17 | ✅ 17/17 | n/a |
-| End-to-end checks (`scripts/e2e_check.py`) | 67 | ✅ 67/67 | ✅ 67/67 |
+| Unit tests (`pytest`) | 18 | ✅ 18/18 | n/a |
+| End-to-end checks (`scripts/e2e_check.py`) | 116 | ✅ 116/116 | ✅ 116/116 |
 | Manual browser testing (desktop) | 6 screens + landing page | ✅ | ✅ |
 | Responsive testing (390 px phone width) | 6 screens + landing page | ✅ no horizontal overflow | ✅ |
 
@@ -24,7 +24,7 @@ cd backend
 
 | Area | Tests |
 |---|---|
-| RiskGuard (12) | sizing capped by single-stock exposure; large order REDUCED; small order APPROVED with stop < entry < target; risk budget binds with a wide stop; NO TRADE rejected; opposite signal rejected; low confidence fails R:R; HOLD halves size; daily loss limit; total exposure cap; sell without position rejected and oversell capped; risk-level thresholds |
+| RiskGuard (13) | sizing capped by single-stock exposure; large order REDUCED; small order APPROVED with stop < entry < target; risk budget binds with a wide stop; buying against a SELL signal allowed at 25% size with a warning; buying on NO TRADE allowed with a warning; daily loss limit still applies against the AI; low confidence fails R:R; HOLD halves size; daily loss limit; total exposure cap; sell without position rejected and oversell capped; risk-level thresholds |
 | Features (3) | **no look-ahead** (changing future rows never changes past features); no NaN after warm-up; labels valid with the last *horizon* rows empty |
 | Paper broker (2) | buy-buy-sell P&L arithmetic with average price; rejected orders change nothing |
 
@@ -33,10 +33,10 @@ cd backend
 | Group | What is verified |
 |---|---|
 | Static & routing (11) | landing page, app, CSS, JS, vendor bundles, logo, Swagger docs, 404 for unknown paths |
-| Health & market (9) | model loaded, 4 symbols, candles ordered and OHLC-consistent, lowercase symbols accepted, 5-level book with bid < ask, 404 for unknown symbols, 422 for a bad `limit` |
-| PredictX (7) | for every symbol: valid signal, probabilities sum to 1, 4 factors, disclaimer present; model card; sentiment; 404 for unknown symbols |
+| Health & market (10) | model loaded, ≥ 50 symbols, ticker with `&` (M&M) URL-encoded, candles ordered and OHLC-consistent, lowercase symbols accepted, 5-level book with bid < ask, 404 for unknown symbols, 422 for a bad `limit` |
+| PredictX (54) | for every symbol: valid signal, probabilities sum to 1, 4 factors, disclaimer present; model card; sentiment; 404 for unknown symbols |
 | Auth & security (10) | Google Client ID exposed to the frontend; 401 without a session on every protected route; **forged Google token rejected (401)**; missing body (422); guest login; `/me` after login |
-| RiskGuard validation (6) | invalid side (422), qty 0 and negative qty rejected, unknown symbol (404), sell without position rejected, absurd qty (10¹²) handled safely |
+| RiskGuard validation (7) | invalid side (422), qty 0 and negative qty rejected, unknown symbol (404), sell without position rejected, absurd qty (10¹²) handled safely, buy against the AI approved with a warning |
 | Trade lifecycle (13) | finds a tradable signal; stop < entry < target; BUY fills; position qty matches; **equity = cash + market value**; cash reduced by exactly qty × price; partial SELL realises P&L; oversell REDUCED to held qty; position closed; **cash delta = realised P&L**; order log newest first |
 | Accounts (6) | second user fully isolated; reset restores ₹10,00,000; equity curve; risk portfolio; logout clears session |
 | Monitor (3) | rate 0 and 30,000 rejected (422); metrics shape |

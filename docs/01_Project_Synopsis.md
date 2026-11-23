@@ -109,7 +109,7 @@ Most important features: ATR % (0.17), volume z-score (0.15), 15-bar return (0.1
 The feed rate holds its target (199 events/s at a target of 200; 3,159 at 3,000). Parquet writes run in a background thread and never block processing.
 
 ### 8.3 Quality
-17 unit tests and 67 end-to-end checks pass, both locally and against the production deployment (see the [Test Report](06_Test_Report.md)).
+18 unit tests and 116 end-to-end checks pass, both locally and against the production deployment (see the [Test Report](06_Test_Report.md)).
 
 ## 9. Limitations
 
