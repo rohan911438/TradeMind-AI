@@ -26,8 +26,8 @@ NIFTY50 = [
     "SHRIRAMFIN", "TRENT", "BEL", "APOLLOHOSP", "CIPLA", "DRREDDY", "TATACONSUM", "JIOFIN", "ETERNAL",
     "HEROMOTOCO", "INDIGO", "MAXHEALTH", "TMPV",
 ]
-# The model was trained and evaluated (thesis Chapter 8) on these four stocks; kept fixed for reproducibility.
-MODEL_SYMBOLS_DEFAULT = "RELIANCE,TCS,INFY,HDFCBANK"
+# The model is trained and evaluated (thesis Chapter 8) on the whole blue-chip universe.
+MODEL_SYMBOLS_DEFAULT = ",".join(NIFTY50)
 
 
 def _list(name: str, default: str) -> list[str]:

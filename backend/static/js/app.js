@@ -262,7 +262,7 @@
       const [s, sent] = await Promise.all([getSignal(sym), withSentiment ? api("/api/sentiment/" + enc(sym)) : Promise.resolve(null)]);
       renderSigSyms();
       $("#sig-scope").textContent = s.in_training_set ? "Model trained and tested on this stock"
-        : "Model applied out of sample: trained and tested on RELIANCE, TCS, INFY and HDFCBANK only";
+        : "Model applied out of sample: this stock was not in the training set";
       $("#sig-sym").textContent = sym + " · NSE · " + s.model_version;
       $("#sig-signal").textContent = sigText(s.signal);
       $("#sig-signal").style.color = SIG_COLOR[s.signal];

@@ -1,7 +1,7 @@
 {
-  "trained_at": "2026-11-23 20:22:25",
+  "trained_at": "2026-11-23 23:28:44",
   "model": "XGBoost multi-class (SELL/HOLD/BUY)",
-  "model_version": "xgb-20261123-2022",
+  "model_version": "xgb-20261123-2328",
   "features": [
     "ret_1",
     "ret_5",
@@ -25,101 +25,289 @@
       "source": "yfinance (NSE 5-min)",
       "bars": 4316
     },
+    "HDFCBANK": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4325
+    },
     "INFY": {
       "source": "yfinance (NSE 5-min)",
       "bars": 4320
     },
-    "HDFCBANK": {
+    "ICICIBANK": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4313
+    },
+    "BHARTIARTL": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4321
+    },
+    "SBIN": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4323
+    },
+    "HINDUNILVR": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4320
+    },
+    "ITC": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4327
+    },
+    "LT": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4313
+    },
+    "BAJFINANCE": {
       "source": "yfinance (NSE 5-min)",
       "bars": 4325
+    },
+    "HCLTECH": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4322
+    },
+    "KOTAKBANK": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4322
+    },
+    "AXISBANK": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4323
+    },
+    "SUNPHARMA": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4319
+    },
+    "MARUTI": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4315
+    },
+    "M&M": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4321
+    },
+    "ULTRACEMCO": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4303
+    },
+    "NTPC": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4320
+    },
+    "TITAN": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4313
+    },
+    "ONGC": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4326
+    },
+    "ADANIPORTS": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4319
+    },
+    "POWERGRID": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4321
+    },
+    "WIPRO": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4330
+    },
+    "BAJAJFINSV": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4321
+    },
+    "NESTLEIND": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4321
+    },
+    "COALINDIA": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4326
+    },
+    "ASIANPAINT": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4319
+    },
+    "JSWSTEEL": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4326
+    },
+    "TATASTEEL": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4325
+    },
+    "BAJAJ-AUTO": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4313
+    },
+    "ADANIENT": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4316
+    },
+    "GRASIM": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4312
+    },
+    "HINDALCO": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4323
+    },
+    "TECHM": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4316
+    },
+    "SBILIFE": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4316
+    },
+    "EICHERMOT": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4317
+    },
+    "HDFCLIFE": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4318
+    },
+    "SHRIRAMFIN": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4323
+    },
+    "TRENT": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4313
+    },
+    "BEL": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4324
+    },
+    "APOLLOHOSP": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4314
+    },
+    "CIPLA": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4317
+    },
+    "DRREDDY": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4322
+    },
+    "TATACONSUM": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4322
+    },
+    "JIOFIN": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4329
+    },
+    "ETERNAL": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4324
+    },
+    "HEROMOTOCO": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4320
+    },
+    "INDIGO": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4310
+    },
+    "MAXHEALTH": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4316
+    },
+    "TMPV": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4324
     }
   },
   "rows": {
-    "train": 11659,
-    "val": 2039,
-    "test": 3438
+    "train": 148580,
+    "val": 25977,
+    "test": 43816
   },
   "test_period": [
-    1793856000,
+    1793855700,
     1795425600
   ],
-  "best_iteration": 9,
-  "accuracy": 0.43833624200116345,
-  "macro_f1": 0.3901499474207815,
-  "baseline_majority_accuracy": 0.5933682373472949,
+  "best_iteration": 14,
+  "accuracy": 0.43317509585539526,
+  "macro_f1": 0.37207467811679784,
+  "baseline_majority_accuracy": 0.6078829651268943,
   "baseline_majority_class": "HOLD",
-  "baseline_random_accuracy": 0.43476479046593164,
-  "baseline_majority_macro_f1": 0.24826579043446514,
-  "directional_hit_rate": 0.2555443548387097,
-  "directional_chance_rate": 0.20345808938054757,
-  "confident_signal_precision": 0.29536290322580644,
-  "confident_signal_coverage": 0.28853984874927285,
-  "confidence_threshold": 0.35125744342803955,
+  "baseline_random_accuracy": 0.446427773892643,
+  "baseline_majority_macro_f1": 0.2520427909705564,
+  "directional_hit_rate": 0.22808176749948378,
+  "directional_chance_rate": 0.19565866472717114,
+  "confident_signal_precision": 0.26935501838030523,
+  "confident_signal_coverage": 0.20487949607449332,
+  "confidence_threshold": 0.3558923602104187,
   "label_distribution_test": {
-    "SELL": 0.20477021524141942,
-    "HOLD": 0.5933682373472949,
-    "BUY": 0.20186154741128562
+    "SELL": 0.19230418112105166,
+    "HOLD": 0.6078829651268943,
+    "BUY": 0.19981285375205404
   },
   "confusion_matrix": [
     [
-      280,
-      214,
-      210
+      2869,
+      3078,
+      2479
     ],
     [
-      582,
-      1000,
-      458
+      7493,
+      13457,
+      5685
     ],
     [
-      227,
-      240,
-      227
+      3035,
+      3066,
+      2654
     ]
   ],
   "classification_report": {
     "SELL": {
-      "precision": 0.2571166207529844,
-      "recall": 0.3977272727272727,
-      "f1-score": 0.3123257110987172,
-      "support": 704.0
+      "precision": 0.21415242218407107,
+      "recall": 0.34049370994540706,
+      "f1-score": 0.2629336021628557,
+      "support": 8426.0
     },
     "HOLD": {
-      "precision": 0.687757909215956,
-      "recall": 0.49019607843137253,
-      "f1-score": 0.5724098454493417,
-      "support": 2040.0
+      "precision": 0.686546604765063,
+      "recall": 0.5052374694950253,
+      "f1-score": 0.582100527727312,
+      "support": 26635.0
     },
     "BUY": {
-      "precision": 0.2536312849162011,
-      "recall": 0.3270893371757925,
-      "f1-score": 0.2857142857142857,
-      "support": 694.0
+      "precision": 0.2453318543168793,
+      "recall": 0.30314106225014276,
+      "f1-score": 0.27118990446022584,
+      "support": 8755.0
     },
-    "accuracy": 0.43833624200116345,
+    "accuracy": 0.43317509585539526,
     "macro avg": {
-      "precision": 0.39950193829504715,
-      "recall": 0.4050042294448126,
-      "f1-score": 0.3901499474207815,
-      "support": 3438.0
+      "precision": 0.3820102937553378,
+      "recall": 0.3829574138968584,
+      "f1-score": 0.37207467811679784,
+      "support": 43816.0
     },
     "weighted avg": {
-      "precision": 0.5119419277319648,
-      "recall": 0.43833624200116345,
-      "f1-score": 0.46127955195342296,
-      "support": 3438.0
+      "precision": 0.5075428499129248,
+      "recall": 0.43317509585539526,
+      "f1-score": 0.4585994545688893,
+      "support": 43816.0
     }
   },
   "feature_importance": {
-    "atr_pct": 0.1710953563451767,
-    "volume_z": 0.14529897272586823,
-    "ret_15": 0.09751997143030167,
-    "vol_20": 0.09546436369419098,
-    "ret_1": 0.08708252757787704,
-    "rsi_14": 0.08660969883203506,
-    "ema_ratio": 0.0862816572189331,
-    "macd_hist": 0.08614830672740936,
-    "ret_5": 0.07237063348293304,
-    "bb_pctb": 0.07212844491004944
+    "atr_pct": 0.3031057119369507,
+    "volume_z": 0.19933044910430908,
+    "vol_20": 0.08959168940782547,
+    "ret_1": 0.08336930721998215,
+    "ret_5": 0.06103658676147461,
+    "bb_pctb": 0.06069837883114815,
+    "rsi_14": 0.05845227465033531,
+    "ema_ratio": 0.05375033617019653,
+    "macd_hist": 0.048610180616378784,
+    "ret_15": 0.04205507040023804
   }
 }

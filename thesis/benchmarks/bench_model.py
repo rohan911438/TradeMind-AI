@@ -212,7 +212,11 @@ def test_frames() -> dict:
     for sym, (df, d) in DATA.items():
         te = d[d.split == "test"]
         pos = df.index.get_indexer(te.index)
-        out[sym] = {"df": df.reset_index(drop=True), "pos": pos, "feat": te.reset_index(drop=True),
+        df = df.reset_index(drop=True)
+        # plain NumPy arrays: the simulation reads one value per bar, and pandas indexing is ~100x slower
+        out[sym] = {"t": df.time.to_numpy(np.int64), "o": df.open.to_numpy(float), "h": df.high.to_numpy(float),
+                    "l": df.low.to_numpy(float), "c": df.close.to_numpy(float), "pos": pos,
+                    "f": {k: te[k].to_numpy(float) for k in ("ret_5", "rsi_14", "vol_20", "atr_pct")},
                     "proba": XGB.predict_proba(te[FEATURES])}
     return out
 
@@ -221,7 +225,7 @@ FR = None
 
 
 def simulate(strategy: str, cost_bps: float, seed: int = 0, entry_prob: float = 0.0) -> dict:
-    """Long-only paper-trading simulation over the test period, one shared â‚¹10 lakh account."""
+    """Long-only paper-trading simulation over the test period, one shared ₹10 lakh account."""
     rng = np.random.default_rng(seed)
     cash = settings.STARTING_CAPITAL
     side_cost = cost_bps / 2 / 1e4
@@ -230,11 +234,11 @@ def simulate(strategy: str, cost_bps: float, seed: int = 0, entry_prob: float = 
     trades = []
     realised_by_day = defaultdict(float)
     last_close = {}
-    timeline = sorted({int(FR[s]["df"].time[p]) for s in FR for p in FR[s]["pos"]})
+    timeline = sorted({int(FR[s]["t"][p]) for s in FR for p in FR[s]["pos"]})
     by_time = defaultdict(list)
     for s in FR:
         for j, p in enumerate(FR[s]["pos"]):
-            by_time[int(FR[s]["df"].time[p])].append((s, j, p))
+            by_time[int(FR[s]["t"][p])].append((s, j, p))
     last_pos = {s: FR[s]["pos"][-1] for s in FR}
     equity_curve = []
 
@@ -246,10 +250,10 @@ def simulate(strategy: str, cost_bps: float, seed: int = 0, entry_prob: float = 
     for T in timeline:
         day = time.strftime("%Y-%m-%d", time.gmtime(T + 19800))
         for s, j, p in by_time[T]:
-            df = FR[s]["df"]
-            o, h, l, c = df.open[p], df.high[p], df.low[p], df.close[p]
+            F = FR[s]
+            o, h, l, c = F["o"][p], F["h"][p], F["l"][p], F["c"][p]
             if strategy == "buy_and_hold" and p == first[s]:
-                qty = math.floor(0.25 * settings.STARTING_CAPITAL / o)
+                qty = math.floor(settings.STARTING_CAPITAL / len(FR) / o)   # equal weight, fully invested
                 cash -= qty * o * (1 + side_cost)
                 positions[s] = {"qty": qty, "entry": o, "stop": None, "target": None, "exit_pos": None}
             if s in pending and pending[s]["pos"] == p:
@@ -282,27 +286,27 @@ def simulate(strategy: str, cost_bps: float, seed: int = 0, entry_prob: float = 
         for s, j, p in by_time[T]:
             if s in positions or s in pending or p + H > last_pos[s]:
                 continue
-            f = FR[s]["feat"].iloc[j]
+            f = {k: v[j] for k, v in FR[s]["f"].items()}
             pr = FR[s]["proba"][j]
             view, conf = int(pr.argmax()), float(pr.max())
             enter, frac, qty, stop, target = False, 0.20, None, None, None
             if strategy == "xgb_raw":
                 enter = view == BUY
             elif strategy == "momentum":
-                enter = f.ret_5 > TH
+                enter = f["ret_5"] > TH
             elif strategy == "rsi":
-                enter = f.rsi_14 < 30
+                enter = f["rsi_14"] < 30
             elif strategy == "random":
                 enter = rng.random() < entry_prob
             elif strategy == "xgb_riskguard":
-                ann_vol = float(f.vol_20 * math.sqrt(BARS_PER_YEAR))
+                ann_vol = float(f["vol_20"] * math.sqrt(BARS_PER_YEAR))
                 if view == BUY and conf >= THR and ann_vol <= 0.8:
-                    c = float(FR[s]["df"].close[p])
+                    c = float(FR[s]["c"][p])
                     port = {"equity": equity(), "cash": cash, "starting_cash": settings.STARTING_CAPITAL,
                             "realised_today": realised_by_day[day],
                             "positions": {k: {"qty": v["qty"], "avg_price": v["entry"],
                                               "market_value": v["qty"] * last_close[k]} for k, v in positions.items()}}
-                    v = evaluate(s, "BUY", None, bid=c, ask=c, atr=float(f.atr_pct * c), ann_vol=ann_vol,
+                    v = evaluate(s, "BUY", None, bid=c, ask=c, atr=float(f["atr_pct"] * c), ann_vol=ann_vol,
                                  signal={"signal": "BUY", "confidence": conf}, portfolio=port)
                     if v["status"] in ("APPROVED", "REDUCED") and v["approved_qty"] > 0:
                         enter, qty = True, v["approved_qty"]
@@ -364,7 +368,7 @@ def experiment_e() -> dict:
                    "mean_sharpe": round(float(np.mean([x["sharpe_annualised"] for x in runs])), 3),
                    "mean_trades": round(float(np.mean([x["trades"] for x in runs])), 1)}
         print(f"  cost {c:>2} bps  random(100)     mean {rand[c]['mean_return_pct']:.3f}%  [{rand[c]['p05']}, {rand[c]['p95']}]")
-    times = sorted({int(FR[s]["df"].time[p]) for s in FR for p in FR[s]["pos"]})
+    times = sorted({int(FR[s]["t"][p]) for s in FR for p in FR[s]["pos"]})
     out = {"period_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(times[0])),
                           time.strftime("%Y-%m-%d %H:%M", time.gmtime(times[-1]))],
            "trading_days": len({time.strftime("%Y-%m-%d", time.gmtime(t + 19800)) for t in times}),
