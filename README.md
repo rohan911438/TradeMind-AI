@@ -11,7 +11,7 @@
 [![Live demo](https://img.shields.io/badge/Live%20demo-trademind--ai.onrender.com-5cffb0?style=for-the-badge)](https://trademind-ai-ujm6.onrender.com)
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.11x-009688?logo=fastapi&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.165-009688?logo=fastapi&logoColor=white)
 ![XGBoost](https://img.shields.io/badge/XGBoost-3.x-EC6B23)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
 ![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?logo=render&logoColor=white)
