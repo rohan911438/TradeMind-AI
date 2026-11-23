@@ -94,6 +94,7 @@
     if (page === "portfolio") refreshRisk();
     if (page === "dashboard" && chart) setTimeout(() => chart.timeScale().scrollToRealTime(), 50);
     history.replaceState(null, "", "#" + page);
+    window.scrollTo(0, 0);
   }
   $$(".nav-btn").forEach((b) => (b.onclick = () => go(b.dataset.page)));
   $("#mobile-nav").onchange = (e) => go(e.target.value);
@@ -494,10 +495,11 @@
   let epsChart, histChart, rateTouched = 0;
   function onMonitor(m) {
     const p = m.processing_latency_us || {}, e = m.end_to_end_latency_us || {};
+    const us = (v) => v == null ? "—" : v >= 1000 ? (v / 1000).toFixed(1) + " ms" : v + " µs";
     $("#mon-tiles").innerHTML =
       tile("Events / sec", num(m.events_per_sec, 0), `target ${num(m.target_rate, 0)}`, "dim") +
-      tile("P50 processing", (p.p50 ?? "—") + " µs") + tile("P95 processing", (p.p95 ?? "—") + " µs") + tile("P99 processing", (p.p99 ?? "—") + " µs") +
-      tile("P99 end-to-end", (e.p99 ?? "—") + " µs", "incl. queue wait", "dim") +
+      tile("P50 processing", us(p.p50)) + tile("P95 processing", us(p.p95)) + tile("P99 processing", us(p.p99)) +
+      tile("P99 end-to-end", us(e.p99), "incl. batching + queue wait", "dim") +
       tile("Queue depth", num(m.queue_depth, 0), `dropped ${m.dropped}`, "dim") +
       tile("Total events", num(m.total_events, 0)) + tile("Recorded", num(m.recorder.recorded, 0), `${m.recorder.files} parquet files`, "dim");
     if (Date.now() - rateTouched > 3000) { $("#rate").value = m.target_rate; $("#rate-val").textContent = m.target_rate.toLocaleString("en-IN"); }
@@ -531,11 +533,11 @@
     refreshMiniSignal();
     setInterval(refreshMiniSignal, 8000);
     setInterval(() => { if (S.page === "signals") loadSignal(S.symbol, false); }, 10000);
-    setInterval(() => { if (S.page === "trade" || S.page === "dashboard") refreshAccount(); if (S.page === "portfolio") refreshRisk(); }, 3000);
+    setInterval(() => { refreshAccount(); if (S.page === "portfolio") refreshRisk(); }, 3000);
     setSide("BUY");
     const start = location.hash.slice(1);
     if (TITLES[start]) go(start);
-    initAuth();
   }
+  initAuth().catch(() => showAuth());
   boot().catch((e) => toast("Could not reach the backend: " + e.message, "err"));
 })();

@@ -1,0 +1,10 @@
+**/.venv
+**/__pycache__
+**/.pytest_cache
+backend/.env
+backend/data/.secret_key
+backend/data/*.db
+backend/data/events
+.git
+docs
+tools
