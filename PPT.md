@@ -41,6 +41,8 @@ style: |
 5. Proposed System: TradeMind AI
 6. System Architecture and Technologies
 7. Findings
+   - 7.1 Results: AI Model
+   - 7.2 Results: Trading Simulation with Costs
 8. Conclusion
 9. Future Scope
 10. References
@@ -111,7 +113,7 @@ To design and build a cloud-based platform that ingests timestamped market event
 - Persists events **asynchronously** (Parquet) and measures P50/P95/P99 latency.
 
 **2. PredictX: AI Intelligence Engine**
-- **XGBoost** model on technical and volatility features (implemented); LSTM explored as future work.
+- **XGBoost** model on ten technical and volatility features, trained on **220,311 real 5-minute bars from all 51 Nifty 50 stocks**; LSTM explored as future work.
 - News sentiment: finance lexicon on sample headlines (implemented); **FinBERT** planned.
 - Produces **explainable BUY / SELL / HOLD / NO TRADE** signals with per-prediction reasons.
 
@@ -148,7 +150,7 @@ To design and build a cloud-based platform that ingests timestamped market event
 **From the survey**
 - **Event-level data matters:** fixed-interval snapshots and tick-by-tick capture give different levels of market detail.
 - **Latency must be measured carefully:** arrival, processing, persistence and end-to-end latency are separate metrics.
-- **Cloud involves trade-offs:** scalability and managed infrastructure versus network and scheduling variability in tail latency.
+- **Cloud involves trade-offs:** managed scalability versus network and scheduling variability in tail latency.
 - **AI needs meaningful features:** order-book imbalance, volatility and sentiment complement price indicators.
 - **Risk management is essential:** a prediction should never trigger a trade automatically.
 - **Evaluation must be realistic:** chronological testing, costs, slippage and baseline comparisons.
@@ -163,7 +165,46 @@ To design and build a cloud-based platform that ingests timestamped market event
 | BUY/SELL hit-rate | **22.8%** vs 19.6% chance |
 | Testing | 18 unit + 116 end-to-end checks passing |
 
-Evaluation metrics used: P50/P95/P99 latency, throughput, dropped events, **precision, recall and macro-F1** (classification). Sharpe ratio and maximum drawdown are reported for the cost-aware trading simulation (thesis Experiment E).
+---
+
+## 7.1 Results: AI Model (51 stocks)
+
+![bg right:40% fit](thesis/figures/fig_D_models.png)
+
+Trained on **220,311 real 5-minute bars**; tested on **43,816 later, unseen rows** (5–23 Nov 2026).
+
+| Model | Macro-F1 | BUY/SELL hit-rate |
+|---|---|---|
+| Always HOLD | 0.252 | – |
+| Random guess | 0.333 | 19.6% (chance) |
+| Momentum rule | 0.360 | 22.1% |
+| Logistic regression | 0.374 | 22.8% |
+| **XGBoost (PredictX)** | **0.372** | **22.8%** |
+
+- Beats the always-HOLD baseline on **all 51 stocks**, but the signal is weak: logistic regression does as well.
+- **More data did not help:** on identical test rows, the old 4-stock model scores 0.376 vs 0.372 (no significant difference).
+
+---
+
+## 7.2 Results: Trading Simulation with Costs
+
+![bg right:40% fit](thesis/figures/fig_E_costs.png)
+
+12 trading days · ₹10,00,000 virtual capital · 51 stocks · long-only
+
+| Strategy | Trades | No costs | **10 bps cost** |
+|---|---|---|---|
+| Buy & hold (equal weight) | 51 | +1.97% | **+1.87%** |
+| XGBoost signals only | 1,803 | **+5.14%** | −10.55% |
+| **XGBoost + RiskGuard** | 840 | +4.50% | −7.74% |
+| RSI rule | 479 | +2.45% | −5.15% |
+| Random entries (mean of 100) | ~2,460 | +2.00% | −13.71% |
+
+- **Without costs, the AI beats chance:** +5.14% is above 95% of random runs.
+- **RiskGuard halves the risk:** max drawdown −1.67% vs −3.42%, half the trades, and smaller losses at every cost level.
+- **Costs erase the edge:** ~2–3 bps gained per trade vs 5–10 bps cost, so every active strategy loses at 10 bps.
+
+> **Lesson:** trade less, and only when the expected move exceeds the cost.
 
 ---
 
@@ -172,7 +213,8 @@ Evaluation metrics used: P50/P95/P99 latency, throughput, dropped events, **prec
 - TradeMind AI demonstrates a unified approach to cloud-based market intelligence, combining **high-frequency data processing, AI-based analysis and risk-aware simulated trading**.
 - The survey shows that effective trading intelligence needs more than price prediction. It also needs **reliable event capture, efficient processing, meaningful features, risk controls and careful evaluation**.
 - The modular **StreamX, PredictX and RiskGuard** engines provide a foundation for developing and testing these capabilities.
-- The model shows a **modest but honest edge** over baselines. This confirms that short-horizon prediction is noisy and that RiskGuard must sit between every signal and every order.
+- The model shows a **modest but honest edge** over baselines (macro-F1 0.372 vs 0.252), and retraining on 13× more stocks did not improve it. Short-horizon prediction is noisy.
+- Without costs its signals beat random entry, but **realistic transaction costs erase the edge**. RiskGuard halves the drawdown and cuts the losses, which confirms that it must sit between every signal and every order.
 
 > **Outcome achieved:** A working, cloud-deployed educational prototype demonstrating event ingestion, market analytics, explainable AI signals, performance monitoring, Google sign-in and paper trading.
 
@@ -185,7 +227,7 @@ Evaluation metrics used: P50/P95/P99 latency, throughput, dropped events, **prec
 - Add **distributed stream processing (Kafka / AWS MSK)** and autoscaling for higher workloads.
 - Investigate advanced order-book models (**DeepLOB**), temporal deep learning (LSTM / Transformers) and reinforcement learning.
 - Use **FinBERT** on live financial news, with uncertainty estimation and model-drift monitoring.
-- Add **historical replay**, back-testing with transaction costs, Sharpe ratio and drawdown.
+- Add a **cost-aware entry filter** (trade only when the expected move exceeds the round-trip cost) and test it over a longer period.
 - Add multi-asset support, richer portfolio analytics and **persistent cloud storage** (PostgreSQL / S3).
 - Strengthen secure deployment, fault tolerance and disaster recovery.
 
