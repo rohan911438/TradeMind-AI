@@ -403,7 +403,7 @@ The feed rates used in the experiments are experimental settings, not exchange-f
 
 | ID | Requirement | Target | Measured (Chapter 8) |
 |---|---|---|---|
-| NF1 | Processing latency at normal load | P99 < 1 ms | 50 µs at 1,000 events/s (laptop); 26 µs on Render at 200 events/s |
+| NF1 | Processing latency at normal load | P99 < 1 ms | 50 µs at 1,000 events/s (laptop, Exp. C); 26.7 µs on Render at 201 events/s (Exp. G) |
 | NF2 | Sustained throughput | ≥ 3,000 events/s with no loss | 4,998 events/s achieved at a 5,000 target, 0 dropped |
 | NF3 | Persistence must not block processing | Async, batched | Async path P99 65 µs vs 246 µs (sync WAL) and 21 ms (sync FULL) |
 | NF4 | Data integrity | No loss or duplicates below saturation | 0 dropped, 0 duplicates, recorded = processed in every run |
@@ -1125,7 +1125,7 @@ The experiments answer seven questions:
 | Machine | Laptop, Intel Core i3-6006U @ 2.0 GHz, 2 physical cores / 4 threads, 11.9 GB RAM | Render free web service (shared vCPU, 512 MB RAM) |
 | OS | Windows 10 Home 10.0.19045 | Linux container (python:3.11-slim) |
 | Python / libraries | 3.11.1; NumPy 2.4.6, pandas 3.1.1, PyArrow 26.0.1, XGBoost 3.2.0, scikit-learn 1.9.1, FastAPI 0.165.0 | same `requirements.txt` |
-| Event loop | asyncio `ProactorEventLoop` | asyncio (uvloop via `uvicorn[standard]`) |
+| Event loop | asyncio `ProactorEventLoop` | asyncio event loop started by Uvicorn on Linux |
 | Clock | `time.perf_counter_ns()` (QueryPerformanceCounter, monotonic) | `time.perf_counter_ns()` (CLOCK_MONOTONIC) |
 | Network | loopback | client in Kolkata → Render Singapore over the public internet (HTTPS) |
 | Storage | local SSD/HDD (NTFS); temporary directories per run | ephemeral container disk |
@@ -1386,14 +1386,14 @@ Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum draw
 
 **Table 8.11: Experiment F: decision-path latency**
 
-| Step | P50 | P95 / P99 | Share of a full signal (P50) |
-|---|---|---|---|
-| Feature build over 400 bars (pandas) | 24.4 ms | – / 92.6 ms | ~51% |
-| XGBoost `predict_proba`, 1 row (scikit-learn wrapper) | 5.47 ms | – / 46.3 ms | ~11% |
-| XGBoost `inplace_predict`, 1 row (native booster) | **0.97 ms** | – / 3.4 ms | (alternative) |
-| XGBoost per-feature contributions, 1 row | 7.04 ms | – / 12.2 ms | ~15% |
-| **Full signal with explanation** (`Predictor.predict`) | **47.8 ms** | – / 176.9 ms | 100% |
-| **RiskGuard `evaluate`** | **21.7 µs** | – / 136.6 µs | – |
+| Step | Calls | P50 | P95 | P99 | Share of a full signal (P50) |
+|---|---|---|---|---|---|
+| Feature build over 400 bars (pandas) | 300 | 24.4 ms | 71.2 ms | 92.6 ms | ~51% |
+| XGBoost `predict_proba`, 1 row (scikit-learn wrapper) | 1,000 | 5.47 ms | 15.8 ms | 46.3 ms | ~11% |
+| XGBoost `inplace_predict`, 1 row (native booster) | 1,000 | **0.97 ms** | 1.65 ms | 3.42 ms | (alternative) |
+| XGBoost per-feature contributions, 1 row | 300 | 7.04 ms | 9.79 ms | 12.2 ms | ~15% |
+| **Full signal with explanation** (`Predictor.predict`) | 300 | **47.8 ms** | 72.5 ms | 176.9 ms | 100% |
+| **RiskGuard `evaluate`** | 20,000 | **21.7 µs** | 65.4 µs | 136.6 µs | – |
 
 **Observations.**
 1. **RiskGuard is effectively free.** At about 22 µs, a pure-Python rule engine adds nothing noticeable to an order, so deterministic risk checks cost no performance.
@@ -1439,7 +1439,7 @@ Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum draw
 
 **Observations.**
 1. **The network sets the floor in the cloud.** The trivial health endpoint takes 160 ms from Kolkata to Singapore and back through Render's proxy. That is about 157 ms more than locally, and the same overhead appears on every endpoint. For a user interface this is acceptable. For latency-sensitive trading it is exactly why the literature emphasises colocation [1, 2, 6].
-2. **The cloud server computes faster than the laptop.** Server-side work (cloud P50 minus the health baseline) is about 40 ms for a signal, against about 60 ms locally. The in-pipeline P50 is 8.4 µs in the cloud against 19 µs on the laptop at the same rate. The Linux container with uvloop also shows end-to-end latency about 5× lower than Windows with the Proactor event loop.
+2. **The cloud server computes faster than the laptop.** Server-side work (cloud P50 minus the health baseline) is about 40 ms for a signal, against about 60 ms locally. The in-pipeline P50 is 8.4 µs in the cloud against 19 µs on the laptop at the same rate. The Linux container also shows end-to-end latency about 5× lower than Windows with the Proactor event loop, which is consistent with the coarser timer behaviour of Windows (Section 7.11).
 3. **WebSocket delivery through the proxy is bursty.** The server sends every 250 ms, but cloud messages arrived in groups (P50 gap 1.8 ms, mean gap 502 ms). This is consistent with proxy or TCP buffering and with CPU throttling on the free plan. The terminal handles this because each message is a full snapshot rather than a delta.
 4. **Integrity held in the cloud too:** 154,439 events processed with zero drops over 13 minutes, and every event either recorded or still in the buffer.
 
