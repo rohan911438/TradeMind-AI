@@ -1,6 +1,8 @@
 # TradeMind AI
 
 **A cloud-ready AI market-intelligence and risk-aware paper-trading platform.**
+
+🌐 **Live demo:** https://trademind-ai-ujm6.onrender.com (Render free tier, so the first load after idling takes ~1 minute)
 College project: Cloud Computing + AI integration. Educational prototype, not financial advice.
 
 TradeMind AI streams market events (**StreamX**), explains what an XGBoost model sees in them (**PredictX**), checks every idea against a risk engine (**RiskGuard**), and lets each user test it with **₹10,00,000 of virtual capital**. Users sign in with Google.
