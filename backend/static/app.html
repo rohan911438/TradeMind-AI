@@ -82,7 +82,7 @@
         </select>
         <h2 id="page-title" class="font-display text-xl font-semibold hidden sm:block">Market</h2>
         <span class="pill !py-1 ml-2" title="Prices are simulated from real NSE history. 1 candle = one 5-minute bar, compressed to 10 seconds.">
-          <span id="conn-dot" class="dot live"></span><span id="feed-label">SIMULATED FEED · 1 bar = 10s</span>
+          <span id="conn-dot" class="dot live"></span><span id="feed-label" class="whitespace-nowrap">SIMULATED<span class="hidden sm:inline"> FEED · 1 bar = 10s</span></span>
         </span>
         <div class="ml-auto flex items-center gap-3">
           <div id="clock" class="num text-sm dim hidden md:block"></div>
@@ -106,7 +106,7 @@
       <!-- =============== DASHBOARD =============== -->
       <section id="page-dashboard" class="page active">
         <div id="watchlist" class="grid grid-cols-2 xl:grid-cols-4 gap-3"></div>
-        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
           <div class="xl:col-span-8 card p-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -156,7 +156,7 @@
       <!-- =============== SIGNALS =============== -->
       <section id="page-signals" class="page">
         <div class="flex flex-wrap items-center gap-2" id="sig-syms"></div>
-        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
           <div class="xl:col-span-7 space-y-4">
             <div id="sig-card" class="card glow-border p-6 relative overflow-hidden">
               <div class="flex flex-wrap items-start justify-between gap-4">
@@ -209,7 +209,7 @@
 
       <!-- =============== TRADE =============== -->
       <section id="page-trade" class="page">
-        <div class="grid xl:grid-cols-12 gap-4">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
           <div class="xl:col-span-4 space-y-4">
             <div class="card p-5">
               <div class="label">Order ticket</div>
@@ -257,7 +257,7 @@
       <!-- =============== PORTFOLIO & RISK =============== -->
       <section id="page-portfolio" class="page">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="pf-tiles"></div>
-        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
           <div class="xl:col-span-8 card p-5">
             <div class="label">Equity curve</div>
             <div class="h-[300px] mt-3"><canvas id="equity-chart"></canvas></div>
@@ -280,7 +280,7 @@
       <!-- =============== MONITOR =============== -->
       <section id="page-monitor" class="page">
         <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3" id="mon-tiles"></div>
-        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
           <div class="xl:col-span-8 card p-5">
             <div class="flex items-center justify-between"><div class="label">Throughput · events / second (last 2 min)</div></div>
             <div class="h-[260px] mt-3"><canvas id="eps-chart"></canvas></div>

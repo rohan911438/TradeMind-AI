@@ -56,6 +56,19 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TradeMind AI", version="1.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def cache_headers(request: Request, call_next):
+    """Browsers must revalidate app files (ETag -> cheap 304), so a new deploy is picked up immediately.
+    Third-party vendor bundles never change, so they may be cached for a day."""
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/vendor/"):
+        response.headers["Cache-Control"] = "public, max-age=86400"
+    elif not path.startswith(("/api/", "/ws/")):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 app.add_middleware(SessionMiddleware, secret_key=_secret_key(), same_site="lax",
                    max_age=60 * 60 * 24 * 14, https_only=os.getenv("HTTPS_ONLY", "false") == "true")
 

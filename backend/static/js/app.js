@@ -149,7 +149,7 @@
       wl.innerHTML = syms.map((s) => `
         <button class="sym-card card card-hover p-4 text-left" data-sym="${s.symbol}">
           <div class="flex items-center justify-between"><span class="font-display font-semibold">${s.symbol}</span><span class="label !text-[10px]">NSE</span></div>
-          <div class="flex items-end justify-between mt-3"><span class="num text-xl font-semibold" data-f="last"></span><span class="num text-sm" data-f="chg"></span></div>
+          <div class="flex flex-wrap items-end justify-between gap-x-2 mt-3"><span class="num text-lg sm:text-xl font-semibold" data-f="last"></span><span class="num text-xs sm:text-sm" data-f="chg"></span></div>
           <div class="bar-track mt-3 !h-1"><div data-f="imb" class="h-full rounded-full transition-all duration-300"></div></div>
         </button>`).join("");
       $$(".sym-card", wl).forEach((b) => (b.onclick = () => selectSymbol(b.dataset.sym)));
@@ -417,13 +417,6 @@
       $("#pos-table").innerHTML = `<thead><tr><th>Symbol</th><th class="text-right">Qty</th><th class="text-right">Avg</th><th class="text-right">Mark</th><th class="text-right">Value</th><th class="text-right">P&L</th><th></th></tr></thead><tbody>` +
         (pos.length ? pos.map(([s, p]) => `<tr><td class="font-semibold">${s}</td><td class="num text-right">${p.qty}</td><td class="num text-right">${num(p.avg_price)}</td><td class="num text-right">${num(p.mark)}</td><td class="num text-right">${inr(p.market_value, 0)}</td><td class="num text-right ${cls(p.unrealised_pnl)}">${signed(p.unrealised_pnl, 0)} (${signed(p.unrealised_pct, 2)}%)</td><td class="text-right"><button class="text-xs text-[var(--down)] hover:underline" data-close="${s}" data-qty="${p.qty}">Close</button></td></tr>`).join("")
           : `<tr><td colspan="7" class="text-center dim py-8">No open positions. Check an AI signal, then place your first paper trade.</td></tr>`) + "</tbody>";
-      $$("[data-close]").forEach((b) => (b.onclick = async () => {
-        try {
-          const r = await post("/api/paper/orders", { symbol: b.dataset.close, side: "SELL", qty: parseInt(b.dataset.qty, 10) });
-          toast(`Closed ${b.dataset.close}: realised ${signed(r.order.realised_pnl || 0, 0)}`, r.order.realised_pnl >= 0 ? "ok" : "err");
-          refreshAccount();
-        } catch (e) { toast(e.message, "err"); }
-      }));
       if (orders) {
         $("#orders-table").innerHTML = `<thead><tr><th>Time</th><th>Symbol</th><th>Side</th><th class="text-right">Qty</th><th class="text-right">Price</th><th>Status</th><th>AI</th><th>RiskGuard</th></tr></thead><tbody>` +
           (orders.length ? orders.map((o) => `<tr>
@@ -437,6 +430,21 @@
       }
     } catch (_) {}
   }
+
+  // Delegated handler: the positions table is re-rendered every few seconds,
+  // so a single listener on the table survives re-renders (no lost clicks).
+  let closing = false;
+  $("#pos-table").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-close]");
+    if (!b || closing) return;
+    closing = true;
+    try {
+      const r = await post("/api/paper/orders", { symbol: b.dataset.close, side: "SELL", qty: parseInt(b.dataset.qty, 10) });
+      toast(`Closed ${b.dataset.close}: realised ${signed(r.order.realised_pnl || 0, 0)}`, r.order.realised_pnl >= 0 ? "ok" : "err");
+      refreshAccount();
+    } catch (err) { toast(err.message, "err"); }
+    finally { closing = false; }
+  });
 
   // ======================= PORTFOLIO & RISK =======================
   let equityChart;
