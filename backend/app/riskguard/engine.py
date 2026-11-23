@@ -1,7 +1,8 @@
 """RiskGuard: decides whether a simulated order may go ahead, and at what size.
 
 Rules (all limits configurable in config.py):
- 1. Signal check   - NO_TRADE or an opposite AI signal -> REJECTED; HOLD -> size halved
+ 1. Signal check   - the AI advises, the user decides: HOLD -> size halved; buying against a SELL or
+                     NO_TRADE signal is allowed with a warning, at 25 % size and the minimum R:R target
  2. Daily loss     - realised loss today >= 3 % of starting capital -> REJECTED
  3. Stop / target  - stop = entry - 1.5 x ATR; reward multiple grows with AI confidence
  4. Risk/reward    - R:R below MIN_RR -> REJECTED
@@ -70,6 +71,7 @@ def evaluate(symbol: str, side: str, qty: int | None, *, bid: float, ask: float,
             "exposure_symbol_after": round(sym_val_after / equity, 4) if equity else 0,
             "exposure_total_after": round(tot_after / equity, 4) if equity else 0,
             "signal": signal.get("signal"), "confidence": signal.get("confidence"),
+            "against_ai": side == "BUY" and signal.get("signal") in ("SELL", "NO_TRADE"),
             "reasons": reasons,
         }
 
@@ -95,13 +97,6 @@ def evaluate(symbol: str, side: str, qty: int | None, *, bid: float, ask: float,
     sig = signal.get("signal", "NO_TRADE")
     conf = float(signal.get("confidence", 0) or 0)
 
-    if sig == "NO_TRADE":
-        reasons.append("AI signal is NO TRADE (confidence below threshold or extreme volatility)")
-        return verdict("REJECTED", 0, entry)
-    if sig == "SELL":
-        reasons.append("Order conflicts with the AI SELL signal")
-        return verdict("REJECTED", 0, entry)
-
     loss_today = -min(0.0, portfolio.get("realised_today", 0.0))
     if loss_today >= L.daily_loss * portfolio["starting_cash"]:
         reasons.append(f"Daily loss limit hit ({loss_today:,.0f} >= {L.daily_loss:.0%} of capital)")
@@ -109,14 +104,24 @@ def evaluate(symbol: str, side: str, qty: int | None, *, bid: float, ask: float,
 
     stop_dist = max(L.stop_atr * atr, entry * 0.002)      # floor: 0.2 % of price
     stop = entry - stop_dist
-    rr = reward_multiple(conf) / L.stop_atr
+    against_ai = sig in ("SELL", "NO_TRADE")
+    if against_ai:
+        # The user decides; RiskGuard does not veto. With no model edge behind the trade, the target is
+        # the minimum acceptable R:R and the risk-based size is cut to a quarter.
+        rr = L.min_rr
+    else:
+        rr = reward_multiple(conf) / L.stop_atr
     target = entry + stop_dist * rr
     if rr < L.min_rr:
         reasons.append(f"Risk/reward {rr:.2f} is below the minimum {L.min_rr:.2f} (confidence {conf:.0%} too low)")
         return verdict("REJECTED", 0, entry, stop, target, rr)
 
     sized = math.floor(equity * L.risk_per_trade / stop_dist)
-    if sig == "HOLD":
+    if against_ai:
+        sized //= 4
+        why = "the AI signal is SELL" if sig == "SELL" else "the AI signal is NO TRADE (no confident view)"
+        reasons.append(f"Warning: buying although {why} - allowed, but risk-based size cut to 25%")
+    elif sig == "HOLD":
         sized //= 2
         reasons.append("AI signal is HOLD (no clear edge) - risk-based size halved")
     caps = {

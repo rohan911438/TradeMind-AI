@@ -56,7 +56,7 @@ def save(name: str, obj) -> None:
 # --------------------------------------------------------------------------- data (same split as train.py)
 def load_split() -> dict:
     out = {}
-    for sym in settings.SYMBOLS:
+    for sym in settings.MODEL_SYMBOLS:
         df, _ = load_history(sym)
         d = build_features(df)
         d["label"] = make_labels(df, H, TH)
@@ -173,7 +173,7 @@ def experiment_d() -> dict:
                           "mean_confidence": round(float(conf[m].mean()), 4), "accuracy": round(acc, 4)})
             ece += m.mean() * abs(acc - conf[m].mean())
     per_symbol = []
-    for sym in settings.SYMBOLS:
+    for sym in settings.MODEL_SYMBOLS:
         m = (TE.symbol == sym).values
         s = scores(y_te[m], xpred[m])
         per_symbol.append({"symbol": sym, "test_rows": int(m.sum()), "accuracy": s["accuracy"],
@@ -221,7 +221,7 @@ FR = None
 
 
 def simulate(strategy: str, cost_bps: float, seed: int = 0, entry_prob: float = 0.0) -> dict:
-    """Long-only paper-trading simulation over the test period, one shared ₹10 lakh account."""
+    """Long-only paper-trading simulation over the test period, one shared â‚¹10 lakh account."""
     rng = np.random.default_rng(seed)
     cash = settings.STARTING_CAPITAL
     side_cost = cost_bps / 2 / 1e4

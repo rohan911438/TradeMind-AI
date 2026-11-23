@@ -61,6 +61,7 @@ class Predictor:
         pressure = "Positive" if imbalance > 0.2 else "Negative" if imbalance < -0.2 else "Neutral"
         base = {
             "symbol": symbol, "market_pressure": pressure, "imbalance": round(imbalance, 3),
+            "in_training_set": symbol in settings.MODEL_SYMBOLS,
             "annualised_volatility": round(ann_vol, 4),
             "sentiment": {k: sentiment[k] for k in ("score", "label")},
             "horizon": f"next {settings.HORIZON} bars (~{settings.HORIZON * 5} simulated minutes)",

@@ -30,7 +30,7 @@ METRICS_PATH = settings.MODEL_DIR / "metrics.json"
 def build_dataset(refresh: bool) -> tuple[pd.DataFrame, dict]:
     parts, sources = [], {}
     h = settings.HORIZON
-    for sym in settings.SYMBOLS:
+    for sym in settings.MODEL_SYMBOLS:
         df, src = load_history(sym, refresh=refresh)
         sources[sym] = {"source": src, "bars": len(df)}
         d = build_features(df)

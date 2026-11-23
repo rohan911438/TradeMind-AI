@@ -44,13 +44,23 @@ def test_risk_budget_binds_with_wide_stop():
     assert v["approved_qty"] == 66
 
 
-def test_no_trade_signal_rejected():
-    v = run(signal={"signal": "NO_TRADE", "confidence": 0.3})
-    assert v["status"] == "REJECTED" and v["approved_qty"] == 0
+def test_buy_against_sell_signal_allowed_at_quarter_size():
+    full = run(atr=100.0)["approved_qty"]                       # 66 shares (risk budget binds)
+    v = run(atr=100.0, signal={"signal": "SELL", "confidence": 0.7})
+    assert v["status"] == "APPROVED" and v["against_ai"] is True
+    assert v["approved_qty"] == full // 4
+    assert v["risk_reward"] == 1.2                              # minimum R:R target, no model edge
+    assert v["reasons"][0].startswith("Warning")
 
 
-def test_opposite_signal_rejected():
-    assert run(signal={"signal": "SELL", "confidence": 0.7})["status"] == "REJECTED"
+def test_buy_on_no_trade_signal_allowed_with_warning():
+    v = run(qty=10, signal={"signal": "NO_TRADE", "confidence": 0.3})
+    assert v["status"] == "APPROVED" and v["approved_qty"] == 10 and v["against_ai"] is True
+
+
+def test_against_ai_still_obeys_daily_loss_limit():
+    v = run(signal={"signal": "SELL", "confidence": 0.7}, portfolio=pf(realised_today=-31_000))
+    assert v["status"] == "REJECTED"
 
 
 def test_low_confidence_fails_risk_reward():

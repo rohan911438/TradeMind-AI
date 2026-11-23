@@ -123,7 +123,7 @@
 
   let lastCandleTime = 0;
   async function loadCandles(sym) {
-    const c = await api(`/api/market/${sym}/candles?limit=400`);
+    const c = await api(`/api/market/${enc(sym)}/candles?limit=400`);
     candleSeries.setData(c.map((b) => ({ time: b.time, open: b.open, high: b.high, low: b.low, close: b.close })));
     volSeries.setData(c.map((b) => ({ time: b.time, value: b.volume, color: b.close >= b.open ? "rgba(34,213,139,.3)" : "rgba(255,92,122,.3)" })));
     lastCandleTime = c.length ? c[c.length - 1].time : 0;
@@ -131,6 +131,7 @@
   }
 
   function selectSymbol(sym) {
+    if (!sym || !S.market[sym]) return;  // ignore empty / unknown selections
     S.symbol = sym;
     $("#chart-sym-label").textContent = sym + " · NSE";
     renderWatchlist();
@@ -142,21 +143,26 @@
   }
 
   const prevPrice = {};
+  const enc = encodeURIComponent;  // tickers such as M&M and BAJAJ-AUTO
   function renderWatchlist() {
     const wl = $("#watchlist");
     const syms = Object.values(S.market);
     if (!wl.children.length || wl.children.length !== syms.length) {
       wl.innerHTML = syms.map((s) => `
-        <button class="sym-card card card-hover p-4 text-left" data-sym="${s.symbol}">
-          <div class="flex items-center justify-between"><span class="font-display font-semibold">${s.symbol}</span><span class="label !text-[10px]">NSE</span></div>
-          <div class="flex flex-wrap items-end justify-between gap-x-2 mt-3"><span class="num text-lg sm:text-xl font-semibold" data-f="last"></span><span class="num text-xs sm:text-sm" data-f="chg"></span></div>
-          <div class="bar-track mt-3 !h-1"><div data-f="imb" class="h-full rounded-full transition-all duration-300"></div></div>
+        <button class="sym-card card card-hover px-3 py-2.5 text-left" data-sym="${s.symbol}">
+          <div class="flex items-center justify-between gap-2"><span class="font-display font-semibold text-sm truncate">${s.symbol}</span><span class="num text-[11px]" data-f="chg"></span></div>
+          <div class="mt-1"><span class="num text-base font-semibold" data-f="last"></span></div>
+          <div class="bar-track mt-2 !h-1"><div data-f="imb" class="h-full rounded-full transition-all duration-300"></div></div>
         </button>`).join("");
       $$(".sym-card", wl).forEach((b) => (b.onclick = () => selectSymbol(b.dataset.sym)));
+      $("#wl-count").textContent = syms.length;
+      filterWatchlist();
     }
+    const q = $("#wl-search").value.trim().toUpperCase();
     syms.forEach((s) => {
       const card = $(`.sym-card[data-sym="${s.symbol}"]`, wl);
       card.classList.toggle("active", s.symbol === S.symbol);
+      if (q && !s.symbol.includes(q)) return;  // hidden by the search filter: skip the DOM work
       const last = $('[data-f="last"]', card);
       if (prevPrice[s.symbol] != null && s.last !== prevPrice[s.symbol]) {
         last.classList.remove("flash-up", "flash-down"); void last.offsetWidth;
@@ -166,13 +172,24 @@
       last.textContent = inr(s.last);
       const chg = $('[data-f="chg"]', card);
       chg.textContent = (s.change_pct >= 0 ? "▲ " : "▼ ") + Math.abs(s.change_pct).toFixed(2) + "%";
-      chg.className = "num text-sm " + cls(s.change_pct);
+      chg.className = "num text-[11px] " + cls(s.change_pct);
       const imb = $('[data-f="imb"]', card);
       imb.style.width = Math.abs(s.imbalance) * 50 + "%";
       imb.style.marginLeft = s.imbalance >= 0 ? "50%" : 50 - Math.abs(s.imbalance) * 50 + "%";
       imb.style.background = s.imbalance >= 0 ? "var(--up)" : "var(--down)";
     });
   }
+
+  function filterWatchlist() {
+    const q = $("#wl-search").value.trim().toUpperCase();
+    $$(".sym-card", $("#watchlist")).forEach((c) => c.classList.toggle("hidden", !!q && !c.dataset.sym.includes(q)));
+  }
+  $("#wl-search").oninput = filterWatchlist;
+  $("#wl-search").onkeydown = (e) => {
+    if (e.key !== "Enter") return;
+    const first = $$(".sym-card:not(.hidden)", $("#watchlist"))[0];
+    if (first) selectSymbol(first.dataset.sym);
+  };
 
   function renderBook(s) {
     const maxQ = Math.max(...s.bids.map((b) => b[1]), ...s.asks.map((a) => a[1]), 1);
@@ -219,7 +236,7 @@
   }
 
   // ======================= SIGNALS =======================
-  async function getSignal(sym) { const s = await api("/api/predict/" + sym); S.signals[sym] = s; return s; }
+  async function getSignal(sym) { const s = await api("/api/predict/" + enc(sym)); S.signals[sym] = s; return s; }
 
   async function refreshMiniSignal() {
     try {
@@ -233,14 +250,19 @@
   }
 
   function renderSigSyms() {
-    $("#sig-syms").innerHTML = Object.keys(S.market).map((s) => `<button class="btn ${s === S.symbol ? "btn-primary" : "btn-ghost"} !py-1.5" data-sigsym="${s}">${s}</button>`).join("");
-    $$("[data-sigsym]").forEach((b) => (b.onclick = () => selectSymbol(b.dataset.sigsym)));
+    const sel = $("#sig-syms");
+    if (sel.options.length !== Object.keys(S.market).length)
+      sel.innerHTML = Object.keys(S.market).map((s) => `<option>${s}</option>`).join("");
+    sel.value = S.symbol;
   }
+  $("#sig-syms").onchange = (e) => selectSymbol(e.target.value);
 
   async function loadSignal(sym, withSentiment) {
     try {
-      const [s, sent] = await Promise.all([getSignal(sym), withSentiment ? api("/api/sentiment/" + sym) : Promise.resolve(null)]);
+      const [s, sent] = await Promise.all([getSignal(sym), withSentiment ? api("/api/sentiment/" + enc(sym)) : Promise.resolve(null)]);
       renderSigSyms();
+      $("#sig-scope").textContent = s.in_training_set ? "Model trained and tested on this stock"
+        : "Model applied out of sample: trained and tested on RELIANCE, TCS, INFY and HDFCBANK only";
       $("#sig-sym").textContent = sym + " · NSE · " + s.model_version;
       $("#sig-signal").textContent = sigText(s.signal);
       $("#sig-signal").style.color = SIG_COLOR[s.signal];
@@ -264,7 +286,9 @@
           <div class="bar-track mt-1.5"><div class="h-full rounded-full" style="width:${(Math.abs(f.contribution) / maxC) * 100}%;background:${f.contribution > 0 ? "var(--up)" : "var(--down)"}"></div></div>
           <div class="text-xs muted mt-1.5">${f.text}</div>
         </div>`).join("") || '<p class="dim text-sm">No factors (model not trained).</p>';
-      if (sent) {
+      if (sent && !sent.headlines.length) {
+        $("#sig-heads").innerHTML = `<p class="dim">No sample headlines for ${sym}; sentiment is treated as Neutral. Live news is future work.</p>`;
+      } else if (sent) {
         $("#sig-heads").innerHTML = sent.headlines.map((h) => `
           <div class="flex items-start justify-between gap-3 py-2 border-b border-white/5">
             <span>${h.headline}</span><span class="num text-xs shrink-0 ${cls(h.score)}">${signed(h.score, 2)}</span>
@@ -351,6 +375,7 @@
     box.innerHTML = `
       <div class="flex items-center justify-between"><div class="label">RiskGuard verdict</div><span class="text-xs dim">${v.symbol} · ${v.side}</span></div>
       <div class="font-display text-3xl font-bold mt-2" style="color:${col}">${v.status}</div>
+      ${v.against_ai ? `<div class="mt-3 rounded-lg px-3 py-2 text-xs" style="background:rgba(255,184,77,.12);color:var(--amber)">⚠ You are buying against the AI ${sigText(v.signal)} signal. You decide; RiskGuard allows it at 25% of the normal size.</div>` : ""}
       <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 text-sm">
         <div class="muted">Requested</div><div class="num text-right">${v.requested_qty ?? "auto"}</div>
         <div class="muted">Approved qty</div><div class="num text-right font-semibold">${v.approved_qty}</div>
@@ -462,7 +487,7 @@
         <div class="relative bar-track mt-1.5"><div class="h-full rounded-full" style="width:${Math.min(100, v * 100)}%;background:${v > limit ? "var(--down)" : color}"></div>
         <div class="absolute top-0 bottom-0 w-px bg-white/60" style="left:${limit * 100}%"></div></div></div>`;
       $("#exposure").innerHTML = bar("Total portfolio", pf.exposure, L.max_total_exposure, "var(--mint)") +
-        Object.keys(r.per_symbol).map((s) => bar(s, pf.positions[s]?.weight || 0, L.max_symbol_exposure, "var(--violet)")).join("") +
+        Object.keys(pf.positions).map((s) => bar(s, pf.positions[s]?.weight || 0, L.max_symbol_exposure, "var(--violet)")).join("") +
         bar("Daily loss budget", r.daily_loss_used, 1, "var(--amber)");
       $("#risk-table").innerHTML = `<thead><tr><th>Stock</th><th class="text-right">Ann. volatility</th><th class="text-right">Book imbalance</th><th class="text-right">Weight</th><th>Risk level</th></tr></thead><tbody>` +
         Object.entries(r.per_symbol).map(([s, v]) => {
@@ -474,7 +499,7 @@
         ["Risk per trade", pct(L.risk_per_trade, 0) + " of equity"], ["Stop loss", L.stop_atr_multiple + " × ATR"],
         ["Min risk : reward", "1 : " + L.min_risk_reward], ["Max single-stock exposure", pct(L.max_symbol_exposure, 0)],
         ["Max total exposure", pct(L.max_total_exposure, 0)], ["Daily loss limit", pct(L.daily_loss_limit, 0) + " of capital"],
-        ["AI gate", "NO TRADE / opposite signal → reject; HOLD → half size"],
+        ["AI gate", "HOLD → half size; buying against SELL / NO TRADE → warning, 25% size"],
       ].map(([k, v]) => `<div class="flex justify-between gap-4 py-2 border-b border-white/5"><span class="muted">${k}</span><span class="text-right">${v}</span></div>`).join("");
 
       const data = { labels: eq.map((p) => new Date(p.t * 1000).toLocaleTimeString("en-IN", { hour12: false })), datasets: [{ data: eq.map((p) => p.equity), borderColor: "#5cffb0", backgroundColor: "rgba(92,255,176,.08)", fill: true, tension: .3, pointRadius: 0, borderWidth: 2 }] };
@@ -519,7 +544,7 @@
     if (!histChart) histChart = new Chart($("#hist-chart"), { type: "bar", data: hd, options: chartOpts((v) => v) }); else { histChart.data = hd; histChart.update("none"); }
     const stage = (name, sub, col) => `<div class="card p-3 text-center flex-1 min-w-[100px]"><div class="text-xs font-semibold" style="color:${col}">${name}</div><div class="num text-[11px] dim mt-1">${sub}</div></div>`;
     const arrow = `<div class="dim self-center">→</div>`;
-    $("#pipeline").innerHTML = `<div class="flex flex-wrap gap-2 items-stretch">${stage("Simulator", num(m.target_rate, 0) + "/s", "var(--sky)")}${arrow}${stage("Event bus", "depth " + m.queue_depth, "var(--sky)")}${arrow}${stage("Processor", "p99 " + p.p99 + "µs", "var(--violet)")}${arrow}${stage("State + WS", "4 symbols", "var(--mint)")}${arrow}${stage("Recorder", m.recorder.buffered + " buffered", "var(--amber)")}</div>`;
+    $("#pipeline").innerHTML = `<div class="flex flex-wrap gap-2 items-stretch">${stage("Simulator", num(m.target_rate, 0) + "/s", "var(--sky)")}${arrow}${stage("Event bus", "depth " + m.queue_depth, "var(--sky)")}${arrow}${stage("Processor", "p99 " + p.p99 + "µs", "var(--violet)")}${arrow}${stage("State + WS", Object.keys(S.market).length + " symbols", "var(--mint)")}${arrow}${stage("Recorder", m.recorder.buffered + " buffered", "var(--amber)")}</div>`;
     $("#recorder").innerHTML = `<div class="grid grid-cols-2 gap-2 text-xs">
       <div class="muted">Session</div><div class="mono text-right">${m.recorder.session}</div>
       <div class="muted">Last write</div><div class="num text-right">${m.recorder.last_write_ms} ms (background thread)</div>

@@ -17,9 +17,27 @@ def _bool(name: str, default: str) -> bool:
     return os.getenv(name, default).lower() in ("1", "true", "yes")
 
 
+# Blue-chip universe: the Nifty 50 constituents (Yahoo Finance tickers without the ".NS" suffix).
+NIFTY50 = [
+    "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK", "BHARTIARTL", "SBIN", "HINDUNILVR", "ITC", "LT",
+    "BAJFINANCE", "HCLTECH", "KOTAKBANK", "AXISBANK", "SUNPHARMA", "MARUTI", "M&M", "ULTRACEMCO", "NTPC", "TITAN",
+    "ONGC", "ADANIPORTS", "POWERGRID", "WIPRO", "BAJAJFINSV", "NESTLEIND", "COALINDIA", "ASIANPAINT", "JSWSTEEL",
+    "TATASTEEL", "BAJAJ-AUTO", "ADANIENT", "GRASIM", "HINDALCO", "TECHM", "SBILIFE", "EICHERMOT", "HDFCLIFE",
+    "SHRIRAMFIN", "TRENT", "BEL", "APOLLOHOSP", "CIPLA", "DRREDDY", "TATACONSUM", "JIOFIN", "ETERNAL",
+    "HEROMOTOCO", "INDIGO", "MAXHEALTH", "TMPV",
+]
+# The model was trained and evaluated (thesis Chapter 8) on these four stocks; kept fixed for reproducibility.
+MODEL_SYMBOLS_DEFAULT = "RELIANCE,TCS,INFY,HDFCBANK"
+
+
+def _list(name: str, default: str) -> list[str]:
+    return [s.strip().upper() for s in os.getenv(name, default).split(",") if s.strip()]
+
+
 class Settings:
     def __init__(self) -> None:
-        self.SYMBOLS = [s.strip().upper() for s in os.getenv("SYMBOLS", "RELIANCE,TCS,INFY,HDFCBANK").split(",")]
+        self.SYMBOLS = _list("SYMBOLS", ",".join(NIFTY50))          # tradable universe (live feed)
+        self.MODEL_SYMBOLS = _list("MODEL_SYMBOLS", MODEL_SYMBOLS_DEFAULT)  # training / benchmark universe
 
         # StreamX
         self.EVENTS_PER_SEC = int(os.getenv("EVENTS_PER_SEC", "200"))

@@ -9,6 +9,7 @@ import asyncio
 import json
 import sys
 import time
+from urllib.parse import quote
 
 import httpx
 
@@ -42,7 +43,8 @@ def main() -> None:
     h = anon.get("/api/health").json()
     check("health ok + model loaded", h["status"] == "ok" and h["model_loaded"], json.dumps(h)[:200])
     syms = [s["symbol"] for s in anon.get("/api/symbols").json()]
-    check("4 symbols", len(syms) == 4, str(syms))
+    check("blue-chip universe (>= 50 symbols)", len(syms) >= 50, str(len(syms)))
+    check("ticker with '&' works", anon.get("/api/market/M%26M/snapshot").status_code == 200)
 
     # ---------- market ----------
     c = anon.get("/api/market/RELIANCE/candles?limit=300").json()
@@ -58,7 +60,7 @@ def main() -> None:
 
     # ---------- PredictX ----------
     for sym in syms:
-        p = anon.get(f"/api/predict/{sym}").json()
+        p = anon.get(f"/api/predict/{quote(sym)}").json()
         ok = p["signal"] in ("BUY", "SELL", "HOLD", "NO_TRADE") and 0 <= p["confidence"] <= 1 \
             and abs(sum(p["probabilities"].values()) - 1) < 0.01 and len(p["top_factors"]) == 4 and p["disclaimer"]
         check(f"predict {sym}", ok, json.dumps(p)[:200])
@@ -96,13 +98,19 @@ def main() -> None:
     check("sell without position rejected", v["status"] == "REJECTED", v["reasons"][0])
     r = ev({"symbol": "TCS", "side": "BUY", "qty": 10**12})
     check("huge qty handled", r.status_code == 200 and r.json()["verdict"]["approved_qty"] < 10**6, r.text[:150])
+    # Buying against a SELL / NO TRADE signal is the user's call: allowed with a warning at reduced size
+    contra = next((s for s in syms if anon.get(f"/api/predict/{quote(s)}").json()["signal"] in ("SELL", "NO_TRADE")), None)
+    if contra:
+        vc = ev({"symbol": contra, "side": "BUY", "qty": 1}).json()["verdict"]
+        check(f"buy against AI allowed with warning ({contra})",
+              vc["status"] == "APPROVED" and vc["against_ai"] and vc["reasons"][0].startswith("Warning"), str(vc)[:200])
 
     # ---------- full trade lifecycle ----------
     buy_sym, verdict = None, None
     t_end = time.time() + 120
     while time.time() < t_end and buy_sym is None:
         for sym in syms:
-            p = anon.get(f"/api/predict/{sym}").json()
+            p = anon.get(f"/api/predict/{quote(sym)}").json()
             if p["signal"] in ("BUY", "HOLD"):
                 vv = ev({"symbol": sym, "side": "BUY", "qty": None}).json()["verdict"]
                 if vv["approved_qty"] > 0:
@@ -147,7 +155,7 @@ def main() -> None:
     check("reset restores 10L", rp["equity"] == 1_000_000 and rp["orders_count"] == 0)
     check("equity curve endpoint", isinstance(a.get("/api/paper/equity").json(), list))
     rk = a.get("/api/risk/portfolio").json()
-    check("risk portfolio", "limits" in rk and len(rk["per_symbol"]) == 4)
+    check("risk portfolio", "limits" in rk and len(rk["per_symbol"]) == len(syms))
     a.post("/api/auth/logout")
     check("logout clears session", a.get("/api/auth/me").status_code == 401)
 

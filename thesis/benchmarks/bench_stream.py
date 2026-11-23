@@ -42,14 +42,14 @@ RESULTS = Path(__file__).resolve().parent / "results"
 RESULTS.mkdir(parents=True, exist_ok=True)
 
 HIST, SEEDS = {}, {}
-for _s in settings.SYMBOLS:
+for _s in settings.MODEL_SYMBOLS:
     _h, _ = load_history(_s)
     HIST[_s] = _h
     SEEDS[_s] = (float(_h["close"].iloc[-1]), daily_volatility(_h))
 
 
 def new_states() -> dict[str, SymbolState]:
-    return {s: SymbolState(s, HIST[s], settings.BAR_SECONDS) for s in settings.SYMBOLS}
+    return {s: SymbolState(s, HIST[s], settings.BAR_SECONDS) for s in settings.MODEL_SYMBOLS}
 
 
 def pct(values) -> dict | None:
@@ -268,7 +268,7 @@ def experiment_a() -> None:
             dns = ms * 1_000_000
             snaps = hidden = changes = changes_seen = 0
             ranges, rv_ratio = [], []
-            for sym in settings.SYMBOLS:
+            for sym in settings.MODEL_SYMBOLS:
                 se = [e for e in evs if e.symbol == sym]
                 t = np.array([e.created_ns for e in se]) - t_start
                 p = np.array([e.price for e in se])
@@ -293,7 +293,7 @@ def experiment_a() -> None:
                          "mean_intra_interval_range_bps": round(float(np.mean(ranges)), 2),
                          "realised_var_ratio": round(float(np.mean(rv_ratio)), 3)})
         out["runs"].append({"feed_rate": rate, "duration_s": round(span_s, 1), "events": len(evs),
-                            "events_per_symbol_per_s": round(len(evs) / span_s / len(settings.SYMBOLS), 1),
+                            "events_per_symbol_per_s": round(len(evs) / span_s / len(settings.MODEL_SYMBOLS), 1),
                             "rows": rows})
         print(f"  rate {rate}: {len(evs)} events")
     save("A_capture_interval", out)

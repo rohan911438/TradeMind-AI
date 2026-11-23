@@ -73,7 +73,8 @@
       const msg = JSON.parse(e.data);
       const syms = Object.values(msg.symbols);
       const items = syms.map((s) => `<span class="flex items-center gap-3"><span class="text-white font-semibold">${s.symbol}</span><span>₹${inr(s.last)}</span><span class="${s.change_pct >= 0 ? "up" : "down"}">${s.change_pct >= 0 ? "▲" : "▼"} ${Math.abs(s.change_pct).toFixed(2)}%</span><span class="dim">imb ${s.imbalance >= 0 ? "+" : ""}${s.imbalance.toFixed(2)}</span></span>`).join("");
-      $("#ticker").innerHTML = items + items + items + items;
+      $("#ticker").innerHTML = items + items;  // two copies give a seamless loop
+      $("#ticker").style.animationDuration = Math.max(30, syms.length * 5) + "s";  // constant speed for any list size
       const r = msg.symbols.RELIANCE;
       if (r) {
         $("#h-price").textContent = "₹" + inr(r.last);
