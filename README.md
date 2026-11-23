@@ -263,6 +263,7 @@ TradeMind-AI/
 | [Development Log](docs/05_Prompt_Sequence.md) | How it was built, plus prompts for extending it |
 | [Test Report](docs/06_Test_Report.md) | Test strategy, results, bugs found and fixed |
 | [Deployment Guide](docs/07_Deployment_Guide.md) | Render, Docker and AWS EC2 deployment |
+| **[Project Thesis](thesis/main.md)** | Full B.Tech report (also as `.docx`) with 7 reproducible benchmarks: capture, persistence, load, model, trading with costs, decision latency, cloud |
 
 ---
 

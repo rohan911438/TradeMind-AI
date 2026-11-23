@@ -1,0 +1,283 @@
+{
+  "paced": [
+    {
+      "mode": "none",
+      "target_rate": 1000,
+      "duration_s": 10,
+      "achieved_rate": 1002.0,
+      "generated": 11978,
+      "processed": 11964,
+      "dropped": 0,
+      "left_in_queue": 14,
+      "max_queue_depth": 57,
+      "unaccounted": 0,
+      "cpu_percent_one_core": 12.0,
+      "rss_mb": 85.1,
+      "state_update_us": {
+        "p50": 14.3,
+        "p95": 24.8,
+        "p99": 72.84,
+        "max": 1780.1,
+        "mean": 16.0,
+        "n": 10008
+      },
+      "processing_path_us": {
+        "p50": 14.8,
+        "p95": 25.6,
+        "p99": 76.77,
+        "max": 1781.1,
+        "mean": 16.55,
+        "n": 10008
+      },
+      "end_to_end_us": {
+        "p50": 902.9,
+        "p95": 4376.48,
+        "p99": 12527.33,
+        "max": 20358.7,
+        "mean": 1449.93,
+        "n": 10008
+      }
+    },
+    {
+      "mode": "async_parquet",
+      "target_rate": 1000,
+      "duration_s": 10,
+      "achieved_rate": 1000.0,
+      "generated": 12006,
+      "processed": 11992,
+      "dropped": 0,
+      "left_in_queue": 14,
+      "max_queue_depth": 31,
+      "unaccounted": 0,
+      "cpu_percent_one_core": 11.7,
+      "rss_mb": 93.4,
+      "state_update_us": {
+        "p50": 13.0,
+        "p95": 23.75,
+        "p99": 47.73,
+        "max": 33056.5,
+        "mean": 16.19,
+        "n": 10011
+      },
+      "processing_path_us": {
+        "p50": 19.6,
+        "p95": 34.5,
+        "p99": 65.42,
+        "max": 33072.5,
+        "mean": 22.37,
+        "n": 10011
+      },
+      "end_to_end_us": {
+        "p50": 700.7,
+        "p95": 2299.85,
+        "p99": 4606.58,
+        "max": 33447.6,
+        "mean": 940.68,
+        "n": 10011
+      },
+      "persistence_lag_ms": {
+        "p50": 2571.1,
+        "p95": 5274.7,
+        "p99": 5503.1,
+        "max": 5552.3,
+        "mean": 2626.4,
+        "n": 11992
+      },
+      "integrity": {
+        "rows_written": 11992,
+        "unique_seq": 11992,
+        "duplicates": 0,
+        "files": 3,
+        "matches_processed": true
+      }
+    },
+    {
+      "mode": "sync_sqlite_wal",
+      "target_rate": 1000,
+      "duration_s": 10,
+      "achieved_rate": 1000.8,
+      "generated": 12010,
+      "processed": 11992,
+      "dropped": 0,
+      "left_in_queue": 18,
+      "max_queue_depth": 26,
+      "unaccounted": 0,
+      "cpu_percent_one_core": 32.7,
+      "rss_mb": 99.1,
+      "state_update_us": {
+        "p50": 14.8,
+        "p95": 25.0,
+        "p99": 35.1,
+        "max": 745.8,
+        "mean": 14.74,
+        "n": 10000
+      },
+      "processing_path_us": {
+        "p50": 82.7,
+        "p95": 153.9,
+        "p99": 246.41,
+        "max": 32085.1,
+        "mean": 110.84,
+        "n": 10000
+      },
+      "end_to_end_us": {
+        "p50": 1322.35,
+        "p95": 3374.73,
+        "p99": 7732.93,
+        "max": 37142.4,
+        "mean": 1669.02,
+        "n": 10000
+      },
+      "persistence_lag_ms": {
+        "p50": 0,
+        "p95": 0,
+        "p99": 0,
+        "note": "durable before processing completes"
+      },
+      "integrity": {
+        "rows_written": 11992,
+        "unique_seq": 11992,
+        "duplicates": 0,
+        "files": 1,
+        "matches_processed": true
+      }
+    },
+    {
+      "mode": "sync_sqlite_full",
+      "target_rate": 1000,
+      "duration_s": 10,
+      "achieved_rate": 55.5,
+      "generated": 1423,
+      "processed": 1423,
+      "dropped": 0,
+      "left_in_queue": 0,
+      "max_queue_depth": 0,
+      "unaccounted": 0,
+      "cpu_percent_one_core": 16.6,
+      "rss_mb": 97.5,
+      "state_update_us": {
+        "p50": 32.1,
+        "p95": 48.01,
+        "p99": 132.83,
+        "max": 1092.5,
+        "mean": 38.11,
+        "n": 1000
+      },
+      "processing_path_us": {
+        "p50": 12141.45,
+        "p95": 15964.2,
+        "p99": 21069.56,
+        "max": 2006644.9,
+        "mean": 17886.9,
+        "n": 1000
+      },
+      "end_to_end_us": {
+        "p50": 2733146.45,
+        "p95": 4521779.35,
+        "p99": 5019149.33,
+        "max": 5142208.4,
+        "mean": 2555653.23,
+        "n": 1000
+      },
+      "persistence_lag_ms": {
+        "p50": 0,
+        "p95": 0,
+        "p99": 0,
+        "note": "durable before processing completes"
+      },
+      "integrity": {
+        "rows_written": 1423,
+        "unique_seq": 1423,
+        "duplicates": 0,
+        "files": 1,
+        "matches_processed": true
+      }
+    }
+  ],
+  "drain": [
+    {
+      "mode": "none",
+      "events": 50000,
+      "processing_throughput": 103533,
+      "time_to_durable_s": 0.483,
+      "batch_write_ms": 0.0,
+      "per_event_us": {
+        "p50": 8.4,
+        "p95": 15.3,
+        "p99": 23.5,
+        "max": 3597.6,
+        "mean": 9.05,
+        "n": 50000
+      },
+      "generator_rate": 13926,
+      "repeats_throughput": [
+        102682,
+        103533,
+        107213
+      ]
+    },
+    {
+      "mode": "async_parquet",
+      "events": 50000,
+      "processing_throughput": 62151,
+      "time_to_durable_s": 1.145,
+      "batch_write_ms": 331.9,
+      "per_event_us": {
+        "p50": 14.0,
+        "p95": 25.5,
+        "p99": 37.8,
+        "max": 2070.5,
+        "mean": 15.36,
+        "n": 50000
+      },
+      "generator_rate": 12223,
+      "repeats_throughput": [
+        40248,
+        62151,
+        89878
+      ]
+    },
+    {
+      "mode": "sync_sqlite_wal",
+      "events": 20000,
+      "processing_throughput": 8851,
+      "time_to_durable_s": 2.28,
+      "batch_write_ms": 0.0,
+      "per_event_us": {
+        "p50": 81.9,
+        "p95": 131.61,
+        "p99": 318.2,
+        "max": 28599.5,
+        "mean": 111.64,
+        "n": 20000
+      },
+      "generator_rate": 8591,
+      "repeats_throughput": [
+        8003,
+        8851,
+        9801
+      ]
+    },
+    {
+      "mode": "sync_sqlite_full",
+      "events": 2000,
+      "processing_throughput": 60,
+      "time_to_durable_s": 33.35,
+      "batch_write_ms": 0.0,
+      "per_event_us": {
+        "p50": 12017.0,
+        "p95": 16611.21,
+        "p99": 21095.22,
+        "max": 2948898.7,
+        "mean": 16669.33,
+        "n": 2000
+      },
+      "generator_rate": 7763,
+      "repeats_throughput": [
+        60,
+        60,
+        62
+      ]
+    }
+  ]
+}

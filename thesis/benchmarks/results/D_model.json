@@ -1,0 +1,244 @@
+{
+  "test_rows": 3438,
+  "train_rows": 11659,
+  "val_rows": 2039,
+  "label_distribution_train": {
+    "SELL": 0.2,
+    "HOLD": 0.6353,
+    "BUY": 0.1647
+  },
+  "label_distribution_test": {
+    "SELL": 0.2048,
+    "HOLD": 0.5934,
+    "BUY": 0.2019
+  },
+  "table": [
+    {
+      "model": "Majority class (always HOLD)",
+      "accuracy": 0.5934,
+      "macro_precision": 0.1978,
+      "macro_recall": 0.3333,
+      "macro_f1": 0.2483,
+      "f1_per_class": {
+        "SELL": 0.0,
+        "HOLD": 0.7447973713033954,
+        "BUY": 0.0
+      },
+      "directional_coverage": 0.0,
+      "directional_hit_rate": null,
+      "directional_chance": null
+    },
+    {
+      "model": "Stratified random (mean of 50 seeds)",
+      "accuracy": 0.4508,
+      "macro_precision": 0.3335,
+      "macro_recall": 0.3336,
+      "macro_f1": 0.3326,
+      "directional_hit_rate": 0.2035,
+      "directional_coverage": 0.3666,
+      "directional_chance": 0.2035
+    },
+    {
+      "model": "Momentum rule (5-bar return)",
+      "accuracy": 0.5015,
+      "macro_precision": 0.3822,
+      "macro_recall": 0.3798,
+      "macro_f1": 0.3801,
+      "f1_per_class": {
+        "SELL": 0.23431594860166288,
+        "HOLD": 0.666194523135033,
+        "BUY": 0.23993925588458617
+      },
+      "directional_coverage": 0.3613,
+      "directional_hit_rate": 0.252,
+      "directional_chance": 0.2033
+    },
+    {
+      "model": "RSI rule (30/70)",
+      "accuracy": 0.5745,
+      "macro_precision": 0.406,
+      "macro_recall": 0.3631,
+      "macro_f1": 0.337,
+      "f1_per_class": {
+        "SELL": 0.16082474226804125,
+        "HOLD": 0.731378763866878,
+        "BUY": 0.11888111888111888
+      },
+      "directional_coverage": 0.1251,
+      "directional_hit_rate": 0.3,
+      "directional_chance": 0.2037
+    },
+    {
+      "model": "Logistic regression (balanced)",
+      "accuracy": 0.4648,
+      "macro_precision": 0.3935,
+      "macro_recall": 0.396,
+      "macro_f1": 0.3913,
+      "f1_per_class": {
+        "SELL": 0.2802197802197802,
+        "HOLD": 0.6168471085291788,
+        "BUY": 0.2767911818738518
+      },
+      "directional_coverage": 0.4919,
+      "directional_hit_rate": 0.2543,
+      "directional_chance": 0.2032,
+      "log_loss": 1.0843,
+      "brier": 0.6512
+    },
+    {
+      "model": "Random forest (balanced)",
+      "accuracy": 0.4244,
+      "macro_precision": 0.3941,
+      "macro_recall": 0.3966,
+      "macro_f1": 0.3806,
+      "f1_per_class": {
+        "SELL": 0.30269058295964124,
+        "HOLD": 0.5583845478489904,
+        "BUY": 0.28059701492537314
+      },
+      "directional_coverage": 0.5995,
+      "directional_hit_rate": 0.245,
+      "directional_chance": 0.2034,
+      "log_loss": 1.0761,
+      "brier": 0.6484
+    },
+    {
+      "model": "XGBoost (TradeMind PredictX)",
+      "accuracy": 0.4383,
+      "macro_precision": 0.3995,
+      "macro_recall": 0.405,
+      "macro_f1": 0.3901,
+      "f1_per_class": {
+        "SELL": 0.3123257110987172,
+        "HOLD": 0.5724098454493417,
+        "BUY": 0.2857142857142857
+      },
+      "directional_coverage": 0.5771,
+      "directional_hit_rate": 0.2555,
+      "directional_chance": 0.2035,
+      "log_loss": 1.0847,
+      "brier": 0.657
+    }
+  ],
+  "confusion": {
+    "XGBoost": [
+      [
+        280,
+        214,
+        210
+      ],
+      [
+        582,
+        1000,
+        458
+      ],
+      [
+        227,
+        240,
+        227
+      ]
+    ],
+    "Logistic regression": [
+      [
+        204,
+        280,
+        220
+      ],
+      [
+        379,
+        1168,
+        493
+      ],
+      [
+        169,
+        299,
+        226
+      ]
+    ]
+  },
+  "calibration": [
+    {
+      "bin": "0.00-0.36",
+      "n": 2074,
+      "mean_confidence": 0.3447,
+      "accuracy": 0.3867
+    },
+    {
+      "bin": "0.36-0.39",
+      "n": 1016,
+      "mean_confidence": 0.3738,
+      "accuracy": 0.4665
+    },
+    {
+      "bin": "0.39-0.42",
+      "n": 343,
+      "mean_confidence": 0.3974,
+      "accuracy": 0.6676
+    },
+    {
+      "bin": "0.42-0.45",
+      "n": 5,
+      "mean_confidence": 0.4296,
+      "accuracy": 0.4
+    }
+  ],
+  "ece": 0.0797,
+  "confident_signals": {
+    "threshold": 0.35125744342803955,
+    "coverage": 0.2885,
+    "precision": 0.2954
+  },
+  "per_symbol": [
+    {
+      "symbol": "RELIANCE",
+      "test_rows": 861,
+      "accuracy": 0.4774,
+      "macro_f1": 0.3564,
+      "directional_hit_rate": 0.1762,
+      "majority_macro_f1": 0.2719
+    },
+    {
+      "symbol": "TCS",
+      "test_rows": 858,
+      "accuracy": 0.4172,
+      "macro_f1": 0.391,
+      "directional_hit_rate": 0.2857,
+      "majority_macro_f1": 0.2379
+    },
+    {
+      "symbol": "INFY",
+      "test_rows": 859,
+      "accuracy": 0.4424,
+      "macro_f1": 0.4148,
+      "directional_hit_rate": 0.3102,
+      "majority_macro_f1": 0.2348
+    },
+    {
+      "symbol": "HDFCBANK",
+      "test_rows": 860,
+      "accuracy": 0.4163,
+      "macro_f1": 0.3593,
+      "directional_hit_rate": 0.2283,
+      "majority_macro_f1": 0.2463
+    }
+  ],
+  "training_time_s": {
+    "logistic_regression": 0.25,
+    "random_forest": 3.86,
+    "xgboost_retrain_check": 1.2
+  },
+  "xgboost_retrain_reproduces_saved_model": true,
+  "feature_importance": {
+    "atr_pct": 0.1710953563451767,
+    "volume_z": 0.14529897272586823,
+    "ret_15": 0.09751997143030167,
+    "vol_20": 0.09546436369419098,
+    "ret_1": 0.08708252757787704,
+    "rsi_14": 0.08660969883203506,
+    "ema_ratio": 0.0862816572189331,
+    "macd_hist": 0.08614830672740936,
+    "ret_5": 0.07237063348293304,
+    "bb_pctb": 0.07212844491004944
+  },
+  "best_iteration": 9
+}

@@ -1,0 +1,44 @@
+{
+  "feature_build_400_bars": {
+    "n": 300,
+    "p50_us": 24418.8,
+    "p95_us": 71214.4,
+    "p99_us": 92555.3,
+    "mean_us": 30370.1
+  },
+  "xgboost_predict_proba_1_row": {
+    "n": 1000,
+    "p50_us": 5473.4,
+    "p95_us": 15828.3,
+    "p99_us": 46257.8,
+    "mean_us": 7800.6
+  },
+  "xgboost_inplace_predict_1_row": {
+    "n": 1000,
+    "p50_us": 970.3,
+    "p95_us": 1647.0,
+    "p99_us": 3415.2,
+    "mean_us": 1101.0
+  },
+  "xgboost_pred_contribs_1_row": {
+    "n": 300,
+    "p50_us": 7043.0,
+    "p95_us": 9787.1,
+    "p99_us": 12206.7,
+    "mean_us": 7400.0
+  },
+  "full_signal_with_explanation": {
+    "n": 300,
+    "p50_us": 47810.7,
+    "p95_us": 72533.8,
+    "p99_us": 176863.3,
+    "mean_us": 53210.4
+  },
+  "riskguard_evaluate": {
+    "n": 20000,
+    "p50_us": 21.7,
+    "p95_us": 65.4,
+    "p99_us": 136.6,
+    "mean_us": 33.4
+  }
+}

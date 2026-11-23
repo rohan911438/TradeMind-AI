@@ -1,0 +1,147 @@
+{
+  "intervals_ms": [
+    10,
+    50,
+    100,
+    500,
+    1000
+  ],
+  "runs": [
+    {
+      "feed_rate": 200,
+      "duration_s": 30.0,
+      "events": 5995,
+      "events_per_symbol_per_s": 50.0,
+      "rows": [
+        {
+          "interval_ms": 0,
+          "label": "event-driven (every tick)",
+          "snapshots": 5995,
+          "events": 5995,
+          "hidden_events_pct": 0.0,
+          "hidden_price_changes_pct": 0.0,
+          "mean_intra_interval_range_bps": 0.0,
+          "realised_var_ratio": 1.0
+        },
+        {
+          "interval_ms": 10,
+          "label": "snapshot every 10 ms",
+          "snapshots": 11988,
+          "events": 5995,
+          "hidden_events_pct": 2.89,
+          "hidden_price_changes_pct": 2.56,
+          "mean_intra_interval_range_bps": 0.02,
+          "realised_var_ratio": 0.989
+        },
+        {
+          "interval_ms": 50,
+          "label": "snapshot every 50 ms",
+          "snapshots": 2400,
+          "events": 5995,
+          "hidden_events_pct": 60.0,
+          "hidden_price_changes_pct": 58.23,
+          "mean_intra_interval_range_bps": 1.22,
+          "realised_var_ratio": 0.784
+        },
+        {
+          "interval_ms": 100,
+          "label": "snapshot every 100 ms",
+          "snapshots": 1200,
+          "events": 5995,
+          "hidden_events_pct": 79.98,
+          "hidden_price_changes_pct": 78.57,
+          "mean_intra_interval_range_bps": 2.4,
+          "realised_var_ratio": 0.741
+        },
+        {
+          "interval_ms": 500,
+          "label": "snapshot every 500 ms",
+          "snapshots": 240,
+          "events": 5995,
+          "hidden_events_pct": 96.0,
+          "hidden_price_changes_pct": 95.7,
+          "mean_intra_interval_range_bps": 6.73,
+          "realised_var_ratio": 0.659
+        },
+        {
+          "interval_ms": 1000,
+          "label": "snapshot every 1000 ms",
+          "snapshots": 120,
+          "events": 5995,
+          "hidden_events_pct": 98.0,
+          "hidden_price_changes_pct": 97.83,
+          "mean_intra_interval_range_bps": 9.81,
+          "realised_var_ratio": 0.598
+        }
+      ]
+    },
+    {
+      "feed_rate": 2000,
+      "duration_s": 20.0,
+      "events": 40023,
+      "events_per_symbol_per_s": 500.2,
+      "rows": [
+        {
+          "interval_ms": 0,
+          "label": "event-driven (every tick)",
+          "snapshots": 40023,
+          "events": 40023,
+          "hidden_events_pct": 0.0,
+          "hidden_price_changes_pct": 0.0,
+          "mean_intra_interval_range_bps": 0.0,
+          "realised_var_ratio": 1.0
+        },
+        {
+          "interval_ms": 10,
+          "label": "snapshot every 10 ms",
+          "snapshots": 8004,
+          "events": 40023,
+          "hidden_events_pct": 86.9,
+          "hidden_price_changes_pct": 85.18,
+          "mean_intra_interval_range_bps": 1.17,
+          "realised_var_ratio": 0.326
+        },
+        {
+          "interval_ms": 50,
+          "label": "snapshot every 50 ms",
+          "snapshots": 1604,
+          "events": 40023,
+          "hidden_events_pct": 96.02,
+          "hidden_price_changes_pct": 95.23,
+          "mean_intra_interval_range_bps": 2.41,
+          "realised_var_ratio": 0.28
+        },
+        {
+          "interval_ms": 100,
+          "label": "snapshot every 100 ms",
+          "snapshots": 804,
+          "events": 40023,
+          "hidden_events_pct": 97.99,
+          "hidden_price_changes_pct": 97.49,
+          "mean_intra_interval_range_bps": 3.5,
+          "realised_var_ratio": 0.258
+        },
+        {
+          "interval_ms": 500,
+          "label": "snapshot every 500 ms",
+          "snapshots": 164,
+          "events": 40023,
+          "hidden_events_pct": 99.59,
+          "hidden_price_changes_pct": 99.48,
+          "mean_intra_interval_range_bps": 7.71,
+          "realised_var_ratio": 0.221
+        },
+        {
+          "interval_ms": 1000,
+          "label": "snapshot every 1000 ms",
+          "snapshots": 84,
+          "events": 40023,
+          "hidden_events_pct": 99.79,
+          "hidden_price_changes_pct": 99.75,
+          "mean_intra_interval_range_bps": 10.38,
+          "realised_var_ratio": 0.152
+        }
+      ]
+    }
+  ]
+}
