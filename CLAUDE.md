@@ -1,39 +1,29 @@
-# TradeMind AI — Project Context for Claude Code
+# TradeMind AI: Project Context for Claude Code
 
-College final-year project (Cloud Computing + AI). An **educational prototype**, not a real trading system.
-Read `docs/03_System_Architecture.md` before writing code, and follow `docs/05_Prompt_Sequence.md` step by step.
+College final-year project (Cloud Computing + AI). **Shipped and deployed** at https://trademind-ai-ujm6.onrender.com.
+Educational paper-trading prototype, not a real trading system. Read `docs/03_System_Architecture.md` before changing code.
 
-## What must actually WORK in the demo (core)
-1. **StreamX**: simulated live market feed (ticks + 5-level order book) → event bus → market state → WebSocket to UI. Events recorded to Parquet. Latency metrics (P50/P95/P99, events/sec).
-2. **PredictX**: XGBoost model trained on real historical NSE data (yfinance). Returns BUY / SELL / HOLD / NO_TRADE + confidence + top contributing factors + plain-English explanation.
-3. **RiskGuard**: volatility, position sizing, risk/reward, exposure limits → APPROVED / REDUCED / REJECTED with reasons.
-4. **Paper Trading**: virtual ₹10,00,000, market orders that must pass RiskGuard, positions, live P&L.
-5. **React dashboard** that shows all of the above.
+## Stack (as built)
+- Backend: Python 3.11, FastAPI, Uvicorn, XGBoost, pandas, PyArrow, yfinance, google-auth, itsdangerous. Persistence in SQLite (`backend/app/db.py`).
+- Frontend: plain HTML/JS in `backend/static/` (no React, no npm build), **precompiled** Tailwind (`css/tw.css`), TradingView Lightweight Charts, Chart.js. Served by FastAPI.
+- Deploy: `Dockerfile` → Render, auto-deploy on push to `main`.
 
-## What is SIMULATED / OPTIONAL (do not over-build)
-- Live data is a **simulator seeded from real prices**. Always label it "Simulated feed" in the UI.
-- Kafka: only behind the `EventBus` interface + optional docker-compose profile. Default = in-process asyncio bus.
-- Sentiment: lexicon scorer over `data/news/sample_headlines.json` by default; FinBERT only if `USE_FINBERT=true`.
-- Storage: SQLite by default (SQLAlchemy), Postgres via `DATABASE_URL`. Parquet files in `backend/data/events/` stand in for S3.
-- LSTM, C++ optimisation, auth, API Gateway, TimescaleDB = future work. Do not build unless asked.
+## Engines
+- `app/streamx/`: simulator → `EventBus` → processor → `SymbolState` / `Metrics` / `Recorder`. The live feed is SIMULATED from real NSE prices; always label it.
+- `app/predictx/`: features (no look-ahead), `train.py` (purged split), `model.py` (signal + explanation), `sentiment.py` (sample headlines).
+- `app/riskguard/engine.py`: pure-function rules; every verdict carries reasons.
+- `app/paper/broker.py`: per-user accounts. `app/auth.py`: Google ID-token verification + guest.
 
-## Stack
-- Backend: Python 3.11, FastAPI, uvicorn, pydantic v2, SQLAlchemy 2, pandas, pyarrow, xgboost, yfinance, pytest
-- Frontend: React + Vite + TypeScript + Tailwind CSS + `lightweight-charts` + recharts
-- Dev OS: Windows 10 (PowerShell). Use `python -m venv .venv` and `.venv\Scripts\activate`.
+## Rules
+- Keep code simple and explainable (viva).
+- Never reintroduce the Tailwind runtime script; it froze the UI. After adding Tailwind classes, rebuild from the repo root:
+  `npx tailwindcss@3.4.5 -c tools/tailwind/tailwind.config.js -i tools/tailwind/input.css -o backend/static/css/tw.css --minify`
+- Use `time.perf_counter_ns()` for latency and pace loops by elapsed time (Windows timer resolution).
+- Signal responses include the disclaimer. Never claim the model is more accurate than `models/metrics.json` shows.
+- No secrets in git (`backend/.env`, `data/.secret_key`, `data/*.db` are ignored).
+- After each change: `cd backend; python -m pytest -q; python -m scripts.e2e_check`, then commit and push.
 
-## Conventions
-- Keep it simple and readable — the student must be able to explain every file in a viva.
-- Each engine lives in its own package: `backend/app/streamx`, `predictx`, `riskguard`, `paper`.
-- All timestamps are `time.time_ns()` integers (ns) in events; ISO strings in API responses.
-- Every API response that shows a signal includes the disclaimer: "Educational prototype. Not financial advice."
-- Config via `backend/app/config.py` (pydantic-settings, `.env` file). No secrets in code.
-- Write pytest tests for RiskGuard rules, feature engineering and the paper broker.
-- After each prompt step: run the app/tests, fix errors, then summarise what changed.
-
-## Run commands (once built)
-- Backend: `cd backend; .venv\Scripts\activate; uvicorn app.main:app --reload --port 8000`
-- Frontend: `cd frontend; npm run dev` (port 5173, proxies `/api` and `/ws` to 8000)
-- Train model: `cd backend; python -m app.predictx.train --symbols RELIANCE.NS TCS.NS INFY.NS HDFCBANK.NS`
-- Tests: `cd backend; pytest -q`
-- Benchmark: `cd backend; python -m scripts.benchmark --events 100000`
+## Commands (from `backend/`, venv at `.venv`)
+- Run: `.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000` (or `run.bat` at the root)
+- Train: `.\.venv\Scripts\python.exe -m app.predictx.train [--refresh]`
+- Tests: `.\.venv\Scripts\python.exe -m pytest -q` · E2E: `.\.venv\Scripts\python.exe -m scripts.e2e_check [url]`
