@@ -22,7 +22,7 @@
 | 1:00 | Sign-in | "Continue with Google": the ID token is verified on the server and gives each user their own ₹10 lakh account |
 | 1:20 | **Market** | Live candles, order book, imbalance gauge. Point at the **SIMULATED** badge and explain it honestly |
 | 2:10 | **StreamX Monitor** | Drag the slider from 200 to 3,000 events/s; throughput rises and P50 stays around 10 µs. Mention async Parquet recording |
-| 3:00 | **AI Signals** | Signal, probabilities, top factors in plain English, explanation. Open the model card: macro-F1 0.39 vs 0.25, hit-rate 25.6% vs 20.3% chance. Say: *"Confidence is not a probability of profit."* |
+| 3:00 | **AI Signals** | Signal, probabilities, top factors in plain English, explanation. Open the model card: macro-F1 0.37 vs 0.25, hit-rate 22.8% vs 19.6% chance. Say: *"Confidence is not a probability of profit."* |
 | 4:30 | **Paper Trade** | Enter 2,000 shares → *Check with RiskGuard* → **REDUCED** or **REJECTED** with reasons. Click *Use suggested size* → **APPROVED** → place it → position and live P&L appear |
 | 5:30 | **Portfolio & Risk** | Exposure against the 20% / 60% limits, equity curve, the rules table |
 | 6:10 | **Architecture** | Cloud mapping table: Kafka, S3, RDS, Redis, ECS. Docker + Render + auto-deploy from GitHub |
@@ -35,7 +35,7 @@
 | Question | Answer |
 |---|---|
 | Why is the feed simulated? | There is no free real-time NSE tick feed. The simulator starts from real NSE prices with real volatility, and a real feed plugs into the same `EventBus` interface. |
-| How accurate is the model? | Macro-F1 0.39 vs 0.25 baseline; BUY/SELL hit-rate 25.6% vs 20.3% chance. Accuracy (43.8%) is below "always HOLD" (59%) because HOLD dominates and we use balanced class weights; accuracy is the wrong metric here. |
+| How accurate is the model? | Macro-F1 0.37 vs 0.25 baseline; BUY/SELL hit-rate 22.8% vs 19.6% chance. Accuracy (43.3%) is below "always HOLD" (61%) because HOLD dominates and we use balanced class weights; accuracy is the wrong metric here. |
 | How do you avoid look-ahead bias? | Features only use past bars (a unit test proves it), the split is time-ordered, and the 6 rows before each boundary are purged because their labels look ahead. |
 | Why XGBoost and not LSTM? | Tabular indicator features, about 17k rows, fast training, and built-in per-prediction explanations. LSTM is future work. |
 | How is the explanation generated? | XGBoost `pred_contribs` (SHAP-style) values for the predicted class; the top four are turned into sentences. |

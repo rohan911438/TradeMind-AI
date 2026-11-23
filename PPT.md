@@ -157,13 +157,13 @@ To design and build a cloud-based platform that ingests timestamped market event
 
 | Metric | Result |
 |---|---|
-| Processing latency (cloud, 200 events/s) | P50 **8.4 µs** · P95 16.3 µs · P99 26.4 µs |
+| Processing latency (cloud, 200 events/s) | P50 **10.5 µs** · P95 17.7 µs · P99 30.3 µs |
 | Throughput (laptop) | **3,159 events/s** with P99 71 µs |
-| Model macro-F1 (held-out, real NSE data) | **0.390** vs 0.248 baseline |
-| BUY/SELL hit-rate | **25.6%** vs 20.3% chance |
+| Model macro-F1 (held-out, 51 NSE stocks) | **0.372** vs 0.252 baseline |
+| BUY/SELL hit-rate | **22.8%** vs 19.6% chance |
 | Testing | 18 unit + 116 end-to-end checks passing |
 
-Evaluation metrics used: P50/P95/P99 latency, throughput, dropped events, **precision, recall and macro-F1** (classification). Sharpe ratio and maximum drawdown are planned for strategy back-testing.
+Evaluation metrics used: P50/P95/P99 latency, throughput, dropped events, **precision, recall and macro-F1** (classification). Sharpe ratio and maximum drawdown are reported for the cost-aware trading simulation (thesis Experiment E).
 
 ---
 

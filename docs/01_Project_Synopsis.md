@@ -22,7 +22,7 @@ Retail traders face a continuous flood of market data, little help interpreting 
 
 Users sign in with Google and trade a personal ₹10,00,000 virtual account through a responsive web terminal. The system runs as a Docker container on a cloud platform with continuous deployment from GitHub.
 
-On a held-out test set the model achieves a **macro-F1 of 0.390 against a 0.248 baseline** and a **directional hit-rate of 25.6% against 20.3% chance**. The pipeline processes events with a **median latency of 8–18 µs**.
+On a held-out test set the model achieves a **macro-F1 of 0.372 against a 0.252 baseline** and a **directional hit-rate of 22.8% against 19.6% chance**. The pipeline processes events with a **median latency of 8–18 µs**.
 
 ## 2. Problem Statement
 
@@ -64,7 +64,7 @@ On a held-out test set the model achieves a **macro-F1 of 0.390 against a 0.248 
 
 ## 6. Methodology
 
-1. **Data collection.** Real 5-minute OHLCV bars for RELIANCE, TCS, INFY and HDFCBANK (NSE) from Yahoo Finance via `yfinance`: about 4,300 bars per stock covering late August to 23 November 2026, cached as CSV.
+1. **Data collection.** Real 5-minute OHLCV bars for the 51 Nifty 50 stocks (NSE) from Yahoo Finance via `yfinance`: about 4,300 bars per stock (220,311 in total) covering late August to 23 November 2026, cached as CSV.
 2. **Live feed simulation.** No free real-time NSE tick feed is available, so a stochastic simulator continues each stock from its last real close. Prices follow geometric Brownian motion with the stock's measured volatility, scaled to real elapsed time. A hidden, slowly drifting regime adds trends and skews order-book quantities, so book imbalance carries information as it does in real markets. One live candle represents one 5-minute bar, compressed to 10 seconds.
 3. **Event processing.** Each event is stamped at creation, ingestion and completion of processing with a monotonic nanosecond clock. Latency percentiles come from a 10,000-event ring buffer.
 4. **Feature engineering.** Ten scale-free features: 1/5/15-bar returns, RSI-14, MACD histogram, EMA-9/21 ratio, Bollinger %B, ATR %, 20-bar volatility and volume z-score. A unit test verifies that changing future rows never changes past features.
@@ -87,22 +87,22 @@ On a held-out test set the model achieves a **macro-F1 of 0.390 against a 0.248 
 
 ## 8. Results
 
-### 8.1 Model (held-out test period 5–23 Nov 2026, 3,438 bars)
+### 8.1 Model (held-out test period 5–23 Nov 2026, 43,816 bars across 51 stocks)
 
 | Metric | TradeMind | Baseline |
 |---|---|---|
-| Macro-F1 | **0.390** | 0.248 (always HOLD) |
-| BUY/SELL hit-rate | **25.6%** | 20.3% (chance) |
-| Precision on confident signals | **29.5%** (on 28.9% of bars) | 20.3% |
-| Accuracy | 43.8% | 59.3% (always HOLD) / 43.5% (random) |
+| Macro-F1 | **0.372** | 0.252 (always HOLD) |
+| BUY/SELL hit-rate | **22.8%** | 19.6% (chance) |
+| Precision on confident signals | **26.9%** (on 20.5% of bars) | 19.6% |
+| Accuracy | 43.3% | 60.8% (always HOLD) / 45.3% (random) |
 
-Most important features: ATR % (0.17), volume z-score (0.15), 15-bar return (0.10), 20-bar volatility (0.10), 1-bar return (0.09).
+Most important features: ATR % (0.30), volume z-score (0.20), 20-bar volatility (0.09), 1-bar return (0.08), 5-bar return (0.06).
 
 ### 8.2 System performance
 
 | Environment | Load | P50 | P95 | P99 |
 |---|---|---|---|---|
-| Render cloud | 200 events/s | 8.4 µs | 16.3 µs | 26.4 µs |
+| Render cloud | 200 events/s | 10.5 µs | 17.7 µs | 30.3 µs |
 | Windows laptop | 200 events/s | 18.2 µs | 63.2 µs | 250 µs |
 | Windows laptop | 3,000 events/s | 9.5 µs | 26.8 µs | 71 µs |
 

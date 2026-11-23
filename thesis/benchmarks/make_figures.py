@@ -178,7 +178,7 @@ def fig_d(d):
     ax.set_title("XGBoost feature importance")
     out("fig_D_importance")
 
-    cal = d["calibration"]
+    cal = [c for c in d["calibration"] if c["n"] >= 100]   # tiny bins (e.g. 8 rows) are noise, not evidence
     fig, ax = plt.subplots(figsize=(4.8, 4))
     lo = min(c["mean_confidence"] for c in cal) - 0.03
     hi = max(max(c["mean_confidence"] for c in cal), max(c["accuracy"] for c in cal)) + 0.05
@@ -187,7 +187,8 @@ def fig_d(d):
             label=f"XGBoost (ECE {d['ece']:.3f})")
     ax.set_xlabel("Mean predicted confidence"); ax.set_ylabel("Observed accuracy")
     ax.set_title("Reliability of model confidence")
-    ax.legend(loc="upper left")
+    ax.legend(loc="lower right")
+    ax.text(0.02, 0.98, "bins with at least 100 rows", transform=ax.transAxes, va="top", fontsize=8, color=INK2)
     out("fig_D_calibration")
 
 
@@ -206,9 +207,11 @@ def fig_e(e):
         ends.append((y[-1], x[-1]))
     # end labels, nudged apart so they do not collide
     ends_sorted = sorted(ends)
+    lo_y, hi_y = ax.get_ylim()
+    gap = 0.05 * (hi_y - lo_y)                      # minimum label spacing, relative to the axis range
     placed = []
     for v, xe in ends_sorted:
-        yy = v if not placed or v - placed[-1] > 0.3 else placed[-1] + 0.3
+        yy = v if not placed or v - placed[-1] > gap else placed[-1] + gap
         placed.append(yy)
         ax.annotate(f"{v:+.2f}%", (xe, v), xytext=(xe + 3, yy), textcoords="data", fontsize=8.5,
                     color=INK, va="center")

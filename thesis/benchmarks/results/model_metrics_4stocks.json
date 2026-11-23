@@ -1,0 +1,125 @@
+{
+  "trained_at": "2026-11-23 20:22:25",
+  "model": "XGBoost multi-class (SELL/HOLD/BUY)",
+  "model_version": "xgb-20261123-2022",
+  "features": [
+    "ret_1",
+    "ret_5",
+    "ret_15",
+    "rsi_14",
+    "macd_hist",
+    "ema_ratio",
+    "bb_pctb",
+    "atr_pct",
+    "vol_20",
+    "volume_z"
+  ],
+  "horizon_bars": 6,
+  "label_threshold": 0.0025,
+  "data_sources": {
+    "RELIANCE": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4327
+    },
+    "TCS": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4316
+    },
+    "INFY": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4320
+    },
+    "HDFCBANK": {
+      "source": "yfinance (NSE 5-min)",
+      "bars": 4325
+    }
+  },
+  "rows": {
+    "train": 11659,
+    "val": 2039,
+    "test": 3438
+  },
+  "test_period": [
+    1793856000,
+    1795425600
+  ],
+  "best_iteration": 9,
+  "accuracy": 0.43833624200116345,
+  "macro_f1": 0.3901499474207815,
+  "baseline_majority_accuracy": 0.5933682373472949,
+  "baseline_majority_class": "HOLD",
+  "baseline_random_accuracy": 0.43476479046593164,
+  "baseline_majority_macro_f1": 0.24826579043446514,
+  "directional_hit_rate": 0.2555443548387097,
+  "directional_chance_rate": 0.20345808938054757,
+  "confident_signal_precision": 0.29536290322580644,
+  "confident_signal_coverage": 0.28853984874927285,
+  "confidence_threshold": 0.35125744342803955,
+  "label_distribution_test": {
+    "SELL": 0.20477021524141942,
+    "HOLD": 0.5933682373472949,
+    "BUY": 0.20186154741128562
+  },
+  "confusion_matrix": [
+    [
+      280,
+      214,
+      210
+    ],
+    [
+      582,
+      1000,
+      458
+    ],
+    [
+      227,
+      240,
+      227
+    ]
+  ],
+  "classification_report": {
+    "SELL": {
+      "precision": 0.2571166207529844,
+      "recall": 0.3977272727272727,
+      "f1-score": 0.3123257110987172,
+      "support": 704.0
+    },
+    "HOLD": {
+      "precision": 0.687757909215956,
+      "recall": 0.49019607843137253,
+      "f1-score": 0.5724098454493417,
+      "support": 2040.0
+    },
+    "BUY": {
+      "precision": 0.2536312849162011,
+      "recall": 0.3270893371757925,
+      "f1-score": 0.2857142857142857,
+      "support": 694.0
+    },
+    "accuracy": 0.43833624200116345,
+    "macro avg": {
+      "precision": 0.39950193829504715,
+      "recall": 0.4050042294448126,
+      "f1-score": 0.3901499474207815,
+      "support": 3438.0
+    },
+    "weighted avg": {
+      "precision": 0.5119419277319648,
+      "recall": 0.43833624200116345,
+      "f1-score": 0.46127955195342296,
+      "support": 3438.0
+    }
+  },
+  "feature_importance": {
+    "atr_pct": 0.1710953563451767,
+    "volume_z": 0.14529897272586823,
+    "ret_15": 0.09751997143030167,
+    "vol_20": 0.09546436369419098,
+    "ret_1": 0.08708252757787704,
+    "rsi_14": 0.08660969883203506,
+    "ema_ratio": 0.0862816572189331,
+    "macd_hist": 0.08614830672740936,
+    "ret_5": 0.07237063348293304,
+    "bb_pctb": 0.07212844491004944
+  }
+}

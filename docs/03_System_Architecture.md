@@ -133,7 +133,7 @@ class MarketEvent:
 ```json
 {
   "symbol": "RELIANCE", "signal": "NO_TRADE", "model_view": "SELL",
-  "confidence": 0.3203, "raw_confidence": 0.3703, "threshold": 0.3513,
+  "confidence": 0.3203, "raw_confidence": 0.3703, "threshold": 0.3559,
   "probabilities": {"SELL": 0.3703, "HOLD": 0.3021, "BUY": 0.3276},
   "market_pressure": "Positive", "imbalance": 0.53,
   "sentiment": {"score": 0.5, "label": "Positive"},
@@ -141,7 +141,7 @@ class MarketEvent:
   "top_factors": [{"feature": "atr_pct", "value": 0.0032, "contribution": 0.217,
                    "text": "Average true range is 0.32% of price, which supports SELL"}],
   "explanation": "The model leans SELL (37% raw probability) mainly because ...",
-  "horizon": "next 6 bars (~30 simulated minutes)", "model_version": "xgb-20261123-2022",
+  "horizon": "next 6 bars (~30 simulated minutes)", "model_version": "xgb-20261123-2328",
   "disclaimer": "Educational prototype. Confidence is not a probability of profit. Not financial advice."
 }
 ```
@@ -205,7 +205,7 @@ Validation errors return **422**, unknown symbols **404**, and missing sessions 
 
 **Explanation.** `booster.predict(DMatrix, pred_contribs=True)` gives a contribution per feature and class. The top four by |value| for the predicted class are turned into sentences by templates.
 
-**Confidence blend.** +0.04 if book pressure agrees with the direction, −0.05 if it disagrees, +0.02 if sentiment agrees. NO TRADE if the result is below the threshold (validation median, 0.351) or volatility is above 80%.
+**Confidence blend.** +0.04 if book pressure agrees with the direction, −0.05 if it disagrees, +0.02 if sentiment agrees. NO TRADE if the result is below the threshold (validation median, 0.356) or volatility is above 80%.
 
 **Risk.**
 - stop distance = max(1.5 × ATR, 0.2% × entry)

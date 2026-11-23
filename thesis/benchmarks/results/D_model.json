@@ -1,27 +1,27 @@
 {
-  "test_rows": 3438,
-  "train_rows": 11659,
-  "val_rows": 2039,
+  "test_rows": 43816,
+  "train_rows": 148580,
+  "val_rows": 25977,
   "label_distribution_train": {
-    "SELL": 0.2,
-    "HOLD": 0.6353,
-    "BUY": 0.1647
+    "SELL": 0.2036,
+    "HOLD": 0.6232,
+    "BUY": 0.1731
   },
   "label_distribution_test": {
-    "SELL": 0.2048,
-    "HOLD": 0.5934,
-    "BUY": 0.2019
+    "SELL": 0.1923,
+    "HOLD": 0.6079,
+    "BUY": 0.1998
   },
   "table": [
     {
       "model": "Majority class (always HOLD)",
-      "accuracy": 0.5934,
-      "macro_precision": 0.1978,
+      "accuracy": 0.6079,
+      "macro_precision": 0.2026,
       "macro_recall": 0.3333,
-      "macro_f1": 0.2483,
+      "macro_f1": 0.252,
       "f1_per_class": {
         "SELL": 0.0,
-        "HOLD": 0.7447973713033954,
+        "HOLD": 0.7561283729116691,
         "BUY": 0.0
       },
       "directional_coverage": 0.0,
@@ -30,215 +30,597 @@
     },
     {
       "model": "Stratified random (mean of 50 seeds)",
-      "accuracy": 0.4508,
-      "macro_precision": 0.3335,
-      "macro_recall": 0.3336,
-      "macro_f1": 0.3326,
-      "directional_hit_rate": 0.2035,
-      "directional_coverage": 0.3666,
-      "directional_chance": 0.2035
+      "accuracy": 0.4526,
+      "macro_precision": 0.3333,
+      "macro_recall": 0.3333,
+      "macro_f1": 0.3328,
+      "directional_hit_rate": 0.1957,
+      "directional_coverage": 0.3766,
+      "directional_chance": 0.1957
     },
     {
       "model": "Momentum rule (5-bar return)",
-      "accuracy": 0.5015,
-      "macro_precision": 0.3822,
-      "macro_recall": 0.3798,
-      "macro_f1": 0.3801,
+      "accuracy": 0.4942,
+      "macro_precision": 0.3611,
+      "macro_recall": 0.3604,
+      "macro_f1": 0.3602,
       "f1_per_class": {
-        "SELL": 0.23431594860166288,
-        "HOLD": 0.666194523135033,
-        "BUY": 0.23993925588458617
+        "SELL": 0.18831373042329708,
+        "HOLD": 0.6635379718053661,
+        "BUY": 0.22866690535863468
       },
-      "directional_coverage": 0.3613,
-      "directional_hit_rate": 0.252,
-      "directional_chance": 0.2033
+      "directional_coverage": 0.3532,
+      "directional_hit_rate": 0.2205,
+      "directional_chance": 0.1962
     },
     {
       "model": "RSI rule (30/70)",
-      "accuracy": 0.5745,
-      "macro_precision": 0.406,
-      "macro_recall": 0.3631,
-      "macro_f1": 0.337,
+      "accuracy": 0.5729,
+      "macro_precision": 0.3718,
+      "macro_recall": 0.3503,
+      "macro_f1": 0.3236,
       "f1_per_class": {
-        "SELL": 0.16082474226804125,
-        "HOLD": 0.731378763866878,
-        "BUY": 0.11888111888111888
+        "SELL": 0.13687436159346272,
+        "HOLD": 0.7314352622172922,
+        "BUY": 0.10240524781341108
       },
-      "directional_coverage": 0.1251,
-      "directional_hit_rate": 0.3,
-      "directional_chance": 0.2037
+      "directional_coverage": 0.1265,
+      "directional_hit_rate": 0.2464,
+      "directional_chance": 0.1953
     },
     {
       "model": "Logistic regression (balanced)",
-      "accuracy": 0.4648,
-      "macro_precision": 0.3935,
-      "macro_recall": 0.396,
-      "macro_f1": 0.3913,
+      "accuracy": 0.4649,
+      "macro_precision": 0.3757,
+      "macro_recall": 0.3771,
+      "macro_f1": 0.3741,
       "f1_per_class": {
-        "SELL": 0.2802197802197802,
-        "HOLD": 0.6168471085291788,
-        "BUY": 0.2767911818738518
+        "SELL": 0.23345474922947604,
+        "HOLD": 0.6281487405037984,
+        "BUY": 0.26073759295796023
       },
-      "directional_coverage": 0.4919,
-      "directional_hit_rate": 0.2543,
-      "directional_chance": 0.2032,
-      "log_loss": 1.0843,
-      "brier": 0.6512
+      "directional_coverage": 0.4663,
+      "directional_hit_rate": 0.2281,
+      "directional_chance": 0.1964,
+      "log_loss": 1.0895,
+      "brier": 0.6548
     },
     {
       "model": "Random forest (balanced)",
-      "accuracy": 0.4244,
-      "macro_precision": 0.3941,
-      "macro_recall": 0.3966,
-      "macro_f1": 0.3806,
+      "accuracy": 0.4315,
+      "macro_precision": 0.3836,
+      "macro_recall": 0.385,
+      "macro_f1": 0.3732,
       "f1_per_class": {
-        "SELL": 0.30269058295964124,
-        "HOLD": 0.5583845478489904,
-        "BUY": 0.28059701492537314
+        "SELL": 0.26041044947431247,
+        "HOLD": 0.577473986677696,
+        "BUY": 0.28172550595088636
       },
-      "directional_coverage": 0.5995,
-      "directional_hit_rate": 0.245,
-      "directional_chance": 0.2034,
-      "log_loss": 1.0761,
-      "brier": 0.6484
+      "directional_coverage": 0.5595,
+      "directional_hit_rate": 0.2301,
+      "directional_chance": 0.1957,
+      "log_loss": 1.084,
+      "brier": 0.6532
     },
     {
       "model": "XGBoost (TradeMind PredictX)",
-      "accuracy": 0.4383,
-      "macro_precision": 0.3995,
-      "macro_recall": 0.405,
-      "macro_f1": 0.3901,
+      "accuracy": 0.4332,
+      "macro_precision": 0.382,
+      "macro_recall": 0.383,
+      "macro_f1": 0.3721,
       "f1_per_class": {
-        "SELL": 0.3123257110987172,
-        "HOLD": 0.5724098454493417,
-        "BUY": 0.2857142857142857
+        "SELL": 0.2629336021628557,
+        "HOLD": 0.582100527727312,
+        "BUY": 0.27118990446022584
       },
-      "directional_coverage": 0.5771,
-      "directional_hit_rate": 0.2555,
-      "directional_chance": 0.2035,
-      "log_loss": 1.0847,
-      "brier": 0.657
+      "directional_coverage": 0.5527,
+      "directional_hit_rate": 0.2281,
+      "directional_chance": 0.1957,
+      "log_loss": 1.0875,
+      "brier": 0.6586
     }
   ],
   "confusion": {
     "XGBoost": [
       [
-        280,
-        214,
-        210
+        2869,
+        3078,
+        2479
       ],
       [
-        582,
-        1000,
-        458
+        7493,
+        13457,
+        5685
       ],
       [
-        227,
-        240,
-        227
+        3035,
+        3066,
+        2654
       ]
     ],
     "Logistic regression": [
       [
-        204,
-        280,
-        220
+        2083,
+        3808,
+        2535
       ],
       [
-        379,
-        1168,
-        493
+        5025,
+        15710,
+        5900
       ],
       [
-        169,
-        299,
-        226
+        2311,
+        3867,
+        2577
       ]
     ]
   },
   "calibration": [
     {
       "bin": "0.00-0.36",
-      "n": 2074,
-      "mean_confidence": 0.3447,
-      "accuracy": 0.3867
+      "n": 24947,
+      "mean_confidence": 0.3469,
+      "accuracy": 0.3427
     },
     {
       "bin": "0.36-0.39",
-      "n": 1016,
-      "mean_confidence": 0.3738,
-      "accuracy": 0.4665
+      "n": 14392,
+      "mean_confidence": 0.3707,
+      "accuracy": 0.5186
     },
     {
       "bin": "0.39-0.42",
-      "n": 343,
-      "mean_confidence": 0.3974,
-      "accuracy": 0.6676
+      "n": 3953,
+      "mean_confidence": 0.4023,
+      "accuracy": 0.6625
     },
     {
       "bin": "0.42-0.45",
-      "n": 5,
-      "mean_confidence": 0.4296,
-      "accuracy": 0.4
+      "n": 516,
+      "mean_confidence": 0.426,
+      "accuracy": 0.6705
+    },
+    {
+      "bin": "0.45-0.50",
+      "n": 8,
+      "mean_confidence": 0.4564,
+      "accuracy": 0.25
     }
   ],
-  "ece": 0.0797,
+  "ece": 0.0774,
   "confident_signals": {
-    "threshold": 0.35125744342803955,
-    "coverage": 0.2885,
-    "precision": 0.2954
+    "threshold": 0.3558923602104187,
+    "coverage": 0.2049,
+    "precision": 0.2694
   },
   "per_symbol": [
     {
       "symbol": "RELIANCE",
       "test_rows": 861,
-      "accuracy": 0.4774,
-      "macro_f1": 0.3564,
-      "directional_hit_rate": 0.1762,
+      "accuracy": 0.475,
+      "macro_f1": 0.3607,
+      "directional_hit_rate": 0.1916,
       "majority_macro_f1": 0.2719
     },
     {
       "symbol": "TCS",
       "test_rows": 858,
       "accuracy": 0.4172,
-      "macro_f1": 0.391,
-      "directional_hit_rate": 0.2857,
+      "macro_f1": 0.3795,
+      "directional_hit_rate": 0.2549,
       "majority_macro_f1": 0.2379
-    },
-    {
-      "symbol": "INFY",
-      "test_rows": 859,
-      "accuracy": 0.4424,
-      "macro_f1": 0.4148,
-      "directional_hit_rate": 0.3102,
-      "majority_macro_f1": 0.2348
     },
     {
       "symbol": "HDFCBANK",
       "test_rows": 860,
-      "accuracy": 0.4163,
-      "macro_f1": 0.3593,
-      "directional_hit_rate": 0.2283,
+      "accuracy": 0.4,
+      "macro_f1": 0.3404,
+      "directional_hit_rate": 0.2008,
       "majority_macro_f1": 0.2463
+    },
+    {
+      "symbol": "INFY",
+      "test_rows": 859,
+      "accuracy": 0.4249,
+      "macro_f1": 0.3821,
+      "directional_hit_rate": 0.2581,
+      "majority_macro_f1": 0.2348
+    },
+    {
+      "symbol": "ICICIBANK",
+      "test_rows": 858,
+      "accuracy": 0.4079,
+      "macro_f1": 0.3092,
+      "directional_hit_rate": 0.1535,
+      "majority_macro_f1": 0.2578
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "test_rows": 859,
+      "accuracy": 0.4773,
+      "macro_f1": 0.3675,
+      "directional_hit_rate": 0.198,
+      "majority_macro_f1": 0.2684
+    },
+    {
+      "symbol": "SBIN",
+      "test_rows": 860,
+      "accuracy": 0.4035,
+      "macro_f1": 0.3552,
+      "directional_hit_rate": 0.2118,
+      "majority_macro_f1": 0.2491
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "test_rows": 859,
+      "accuracy": 0.4994,
+      "macro_f1": 0.371,
+      "directional_hit_rate": 0.1958,
+      "majority_macro_f1": 0.2662
+    },
+    {
+      "symbol": "ITC",
+      "test_rows": 861,
+      "accuracy": 0.4425,
+      "macro_f1": 0.3704,
+      "directional_hit_rate": 0.2317,
+      "majority_macro_f1": 0.2546
+    },
+    {
+      "symbol": "LT",
+      "test_rows": 858,
+      "accuracy": 0.4662,
+      "macro_f1": 0.3166,
+      "directional_hit_rate": 0.1366,
+      "majority_macro_f1": 0.2669
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "test_rows": 860,
+      "accuracy": 0.3453,
+      "macro_f1": 0.3303,
+      "directional_hit_rate": 0.2179,
+      "majority_macro_f1": 0.2417
+    },
+    {
+      "symbol": "HCLTECH",
+      "test_rows": 860,
+      "accuracy": 0.3605,
+      "macro_f1": 0.3359,
+      "directional_hit_rate": 0.2312,
+      "majority_macro_f1": 0.2333
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "test_rows": 860,
+      "accuracy": 0.364,
+      "macro_f1": 0.3481,
+      "directional_hit_rate": 0.2457,
+      "majority_macro_f1": 0.2378
+    },
+    {
+      "symbol": "AXISBANK",
+      "test_rows": 860,
+      "accuracy": 0.3872,
+      "macro_f1": 0.34,
+      "directional_hit_rate": 0.1996,
+      "majority_macro_f1": 0.2429
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "test_rows": 859,
+      "accuracy": 0.4435,
+      "macro_f1": 0.3501,
+      "directional_hit_rate": 0.201,
+      "majority_macro_f1": 0.2553
+    },
+    {
+      "symbol": "MARUTI",
+      "test_rows": 858,
+      "accuracy": 0.3974,
+      "macro_f1": 0.3609,
+      "directional_hit_rate": 0.2275,
+      "majority_macro_f1": 0.2491
+    },
+    {
+      "symbol": "M&M",
+      "test_rows": 859,
+      "accuracy": 0.3877,
+      "macro_f1": 0.3719,
+      "directional_hit_rate": 0.2748,
+      "majority_macro_f1": 0.2341
+    },
+    {
+      "symbol": "ULTRACEMCO",
+      "test_rows": 856,
+      "accuracy": 0.4755,
+      "macro_f1": 0.3491,
+      "directional_hit_rate": 0.1826,
+      "majority_macro_f1": 0.2642
+    },
+    {
+      "symbol": "NTPC",
+      "test_rows": 859,
+      "accuracy": 0.4657,
+      "macro_f1": 0.362,
+      "directional_hit_rate": 0.2125,
+      "majority_macro_f1": 0.2562
+    },
+    {
+      "symbol": "TITAN",
+      "test_rows": 858,
+      "accuracy": 0.4394,
+      "macro_f1": 0.3839,
+      "directional_hit_rate": 0.2459,
+      "majority_macro_f1": 0.2513
+    },
+    {
+      "symbol": "ONGC",
+      "test_rows": 860,
+      "accuracy": 0.686,
+      "macro_f1": 0.4774,
+      "directional_hit_rate": 0.3175,
+      "majority_macro_f1": 0.286
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "test_rows": 859,
+      "accuracy": 0.4785,
+      "macro_f1": 0.3457,
+      "directional_hit_rate": 0.1494,
+      "majority_macro_f1": 0.2803
+    },
+    {
+      "symbol": "POWERGRID",
+      "test_rows": 859,
+      "accuracy": 0.4866,
+      "macro_f1": 0.4032,
+      "directional_hit_rate": 0.2494,
+      "majority_macro_f1": 0.2553
+    },
+    {
+      "symbol": "WIPRO",
+      "test_rows": 861,
+      "accuracy": 0.4692,
+      "macro_f1": 0.3766,
+      "directional_hit_rate": 0.2264,
+      "majority_macro_f1": 0.2549
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "test_rows": 859,
+      "accuracy": 0.4377,
+      "macro_f1": 0.3677,
+      "directional_hit_rate": 0.2135,
+      "majority_macro_f1": 0.2579
+    },
+    {
+      "symbol": "NESTLEIND",
+      "test_rows": 859,
+      "accuracy": 0.4272,
+      "macro_f1": 0.3765,
+      "directional_hit_rate": 0.25,
+      "majority_macro_f1": 0.2474
+    },
+    {
+      "symbol": "COALINDIA",
+      "test_rows": 860,
+      "accuracy": 0.5686,
+      "macro_f1": 0.3621,
+      "directional_hit_rate": 0.1623,
+      "majority_macro_f1": 0.2798
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "test_rows": 859,
+      "accuracy": 0.5064,
+      "macro_f1": 0.4254,
+      "directional_hit_rate": 0.2614,
+      "majority_macro_f1": 0.2594
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "test_rows": 860,
+      "accuracy": 0.4512,
+      "macro_f1": 0.4021,
+      "directional_hit_rate": 0.2841,
+      "majority_macro_f1": 0.2426
+    },
+    {
+      "symbol": "TATASTEEL",
+      "test_rows": 860,
+      "accuracy": 0.386,
+      "macro_f1": 0.3705,
+      "directional_hit_rate": 0.271,
+      "majority_macro_f1": 0.2349
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "test_rows": 858,
+      "accuracy": 0.4312,
+      "macro_f1": 0.3822,
+      "directional_hit_rate": 0.2469,
+      "majority_macro_f1": 0.2537
+    },
+    {
+      "symbol": "ADANIENT",
+      "test_rows": 858,
+      "accuracy": 0.3462,
+      "macro_f1": 0.3223,
+      "directional_hit_rate": 0.2054,
+      "majority_macro_f1": 0.2476
+    },
+    {
+      "symbol": "GRASIM",
+      "test_rows": 858,
+      "accuracy": 0.3788,
+      "macro_f1": 0.3487,
+      "directional_hit_rate": 0.2333,
+      "majority_macro_f1": 0.2442
+    },
+    {
+      "symbol": "HINDALCO",
+      "test_rows": 860,
+      "accuracy": 0.3849,
+      "macro_f1": 0.3738,
+      "directional_hit_rate": 0.291,
+      "majority_macro_f1": 0.2287
+    },
+    {
+      "symbol": "TECHM",
+      "test_rows": 858,
+      "accuracy": 0.4312,
+      "macro_f1": 0.3808,
+      "directional_hit_rate": 0.2532,
+      "majority_macro_f1": 0.2439
+    },
+    {
+      "symbol": "SBILIFE",
+      "test_rows": 858,
+      "accuracy": 0.4953,
+      "macro_f1": 0.4166,
+      "directional_hit_rate": 0.255,
+      "majority_macro_f1": 0.2566
+    },
+    {
+      "symbol": "EICHERMOT",
+      "test_rows": 859,
+      "accuracy": 0.3527,
+      "macro_f1": 0.3355,
+      "directional_hit_rate": 0.2297,
+      "majority_macro_f1": 0.2332
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "test_rows": 859,
+      "accuracy": 0.3574,
+      "macro_f1": 0.3352,
+      "directional_hit_rate": 0.222,
+      "majority_macro_f1": 0.2418
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "test_rows": 860,
+      "accuracy": 0.2907,
+      "macro_f1": 0.2814,
+      "directional_hit_rate": 0.199,
+      "majority_macro_f1": 0.2303
+    },
+    {
+      "symbol": "TRENT",
+      "test_rows": 858,
+      "accuracy": 0.3834,
+      "macro_f1": 0.3647,
+      "directional_hit_rate": 0.2496,
+      "majority_macro_f1": 0.2398
+    },
+    {
+      "symbol": "BEL",
+      "test_rows": 860,
+      "accuracy": 0.5012,
+      "macro_f1": 0.3875,
+      "directional_hit_rate": 0.2208,
+      "majority_macro_f1": 0.2685
+    },
+    {
+      "symbol": "APOLLOHOSP",
+      "test_rows": 858,
+      "accuracy": 0.4674,
+      "macro_f1": 0.375,
+      "directional_hit_rate": 0.2036,
+      "majority_macro_f1": 0.2604
+    },
+    {
+      "symbol": "CIPLA",
+      "test_rows": 859,
+      "accuracy": 0.5413,
+      "macro_f1": 0.4122,
+      "directional_hit_rate": 0.2176,
+      "majority_macro_f1": 0.2803
+    },
+    {
+      "symbol": "DRREDDY",
+      "test_rows": 860,
+      "accuracy": 0.5023,
+      "macro_f1": 0.3435,
+      "directional_hit_rate": 0.1852,
+      "majority_macro_f1": 0.2699
+    },
+    {
+      "symbol": "TATACONSUM",
+      "test_rows": 860,
+      "accuracy": 0.4453,
+      "macro_f1": 0.372,
+      "directional_hit_rate": 0.2195,
+      "majority_macro_f1": 0.2577
+    },
+    {
+      "symbol": "JIOFIN",
+      "test_rows": 861,
+      "accuracy": 0.4588,
+      "macro_f1": 0.3712,
+      "directional_hit_rate": 0.2194,
+      "majority_macro_f1": 0.2501
+    },
+    {
+      "symbol": "ETERNAL",
+      "test_rows": 860,
+      "accuracy": 0.4186,
+      "macro_f1": 0.3918,
+      "directional_hit_rate": 0.2704,
+      "majority_macro_f1": 0.241
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "test_rows": 859,
+      "accuracy": 0.3783,
+      "macro_f1": 0.3354,
+      "directional_hit_rate": 0.2086,
+      "majority_macro_f1": 0.2471
+    },
+    {
+      "symbol": "INDIGO",
+      "test_rows": 857,
+      "accuracy": 0.4586,
+      "macro_f1": 0.3953,
+      "directional_hit_rate": 0.2556,
+      "majority_macro_f1": 0.2562
+    },
+    {
+      "symbol": "MAXHEALTH",
+      "test_rows": 858,
+      "accuracy": 0.359,
+      "macro_f1": 0.3557,
+      "directional_hit_rate": 0.2723,
+      "majority_macro_f1": 0.226
+    },
+    {
+      "symbol": "TMPV",
+      "test_rows": 860,
+      "accuracy": 0.3314,
+      "macro_f1": 0.314,
+      "directional_hit_rate": 0.212,
+      "majority_macro_f1": 0.2327
     }
   ],
   "training_time_s": {
-    "logistic_regression": 0.25,
-    "random_forest": 3.86,
-    "xgboost_retrain_check": 1.2
+    "logistic_regression": 1.74,
+    "random_forest": 80.55,
+    "xgboost_retrain_check": 6.69
   },
   "xgboost_retrain_reproduces_saved_model": true,
   "feature_importance": {
-    "atr_pct": 0.1710953563451767,
-    "volume_z": 0.14529897272586823,
-    "ret_15": 0.09751997143030167,
-    "vol_20": 0.09546436369419098,
-    "ret_1": 0.08708252757787704,
-    "rsi_14": 0.08660969883203506,
-    "ema_ratio": 0.0862816572189331,
-    "macd_hist": 0.08614830672740936,
-    "ret_5": 0.07237063348293304,
-    "bb_pctb": 0.07212844491004944
+    "atr_pct": 0.3031057119369507,
+    "volume_z": 0.19933044910430908,
+    "vol_20": 0.08959168940782547,
+    "ret_1": 0.08336930721998215,
+    "ret_5": 0.06103658676147461,
+    "bb_pctb": 0.06069837883114815,
+    "rsi_14": 0.05845227465033531,
+    "ema_ratio": 0.05375033617019653,
+    "macd_hist": 0.048610180616378784,
+    "ret_15": 0.04205507040023804
   },
-  "best_iteration": 9
+  "best_iteration": 14
 }

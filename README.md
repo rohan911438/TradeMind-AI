@@ -138,22 +138,22 @@ sequenceDiagram
 
 ### Model (held-out test set, real NSE data)
 
-Trained on **~17,000 real 5-minute bars** (4 stocks, late Aug to 23 Nov 2026) using a **time-ordered, purged** train/validation/test split, so the model never sees the future.
+Trained on **~220,000 real 5-minute bars** (all 51 Nifty 50 stocks, late Aug to 23 Nov 2026) using a **time-ordered, purged** train/validation/test split, so the model never sees the future.
 
 | Metric | TradeMind | Baseline |
 |---|---|---|
-| **Macro-F1** (balanced across classes) | **0.390** | 0.248 (always HOLD) |
-| **BUY/SELL hit-rate** | **25.6%** | 20.3% (chance) |
-| Confident-signal precision | **29.5%** | 20.3% (chance) |
-| Accuracy | 43.8% | 59.3% (always HOLD) · 43.5% (random) |
+| **Macro-F1** (balanced across classes) | **0.372** | 0.252 (always HOLD) |
+| **BUY/SELL hit-rate** | **22.8%** | 19.6% (chance) |
+| Confident-signal precision | **26.9%** | 19.6% (chance) |
+| Accuracy | 43.3% | 60.8% (always HOLD) · 45.3% (random) |
 
-> 📌 HOLD makes up 59% of bars, so plain accuracy rewards a model that never trades. The model uses balanced class weights and is judged on macro-F1 and directional hit-rate. It shows a **modest, honest edge**. Short-horizon prediction is noisy, which is exactly why RiskGuard sits between every signal and every order.
+> 📌 HOLD makes up 61% of bars, so plain accuracy rewards a model that never trades. The model uses balanced class weights and is judged on macro-F1 and directional hit-rate. It shows a **modest, honest edge**. Short-horizon prediction is noisy, which is exactly why RiskGuard sits between every signal and every order.
 
 ### System performance (measured)
 
 | Environment | Load | P50 processing | P99 processing |
 |---|---|---|---|
-| Render (free tier) | 200 events/s | **8.4 µs** | 26.4 µs |
+| Render (free tier) | 200 events/s | **10.5 µs** | 30.3 µs |
 | Laptop (Windows) | 200 events/s | 18 µs | 250 µs |
 | Laptop (Windows) | 3,000 events/s | **9.5 µs** | 71 µs |
 

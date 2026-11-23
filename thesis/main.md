@@ -79,14 +79,14 @@ We acknowledge the open-source communities behind Python, FastAPI, XGBoost, scik
 
 Financial markets generate continuous streams of trades, quotes, order-book updates and news. Turning this stream into useful decisions needs four things: reliable event capture, timely processing, an analytical model that is honest about its accuracy, and disciplined risk control. This project designs, implements, deploys and evaluates **TradeMind AI**, a cloud-based trading decision-support prototype built from three cooperating engines.
 
-**StreamX** is the market-data engine. It ingests a five-level order-book and trade stream for the 51 Nifty 50 blue-chip NSE equities and stamps each event at three points with a monotonic nanosecond clock. It maintains in-memory market state (candles, best bid and offer, depth, order-book imbalance, volatility) and records every event to Parquet files through an asynchronous, batched writer. Because no free real-time NSE tick feed exists, the live stream is produced by a stochastic simulator seeded from real NSE prices and volatilities, and the system labels it as simulated. **PredictX** is the AI engine. It is a gradient-boosted tree model (XGBoost) trained on about 17,000 real 5-minute NSE bars from four of these stocks, using ten look-ahead-free technical features and a purged chronological train/validation/test split. It produces BUY, SELL, HOLD or NO TRADE signals with per-prediction explanations derived from tree contributions. **RiskGuard** is a deterministic rule engine. It sizes each position by a 1% risk budget and an ATR-based stop, enforces risk/reward, single-stock, total-exposure and daily-loss limits, and returns APPROVED, REDUCED or REJECTED with human-readable reasons. A paper-trading broker gives every Google-authenticated user a ₹10,00,000 virtual account. The system is packaged as a single Docker image and runs on the Render cloud platform with continuous deployment from GitHub.
+**StreamX** is the market-data engine. It ingests a five-level order-book and trade stream for the 51 Nifty 50 blue-chip NSE equities and stamps each event at three points with a monotonic nanosecond clock. It maintains in-memory market state (candles, best bid and offer, depth, order-book imbalance, volatility) and records every event to Parquet files through an asynchronous, batched writer. Because no free real-time NSE tick feed exists, the live stream is produced by a stochastic simulator seeded from real NSE prices and volatilities, and the system labels it as simulated. **PredictX** is the AI engine. It is a gradient-boosted tree model (XGBoost) trained on about 220,000 real 5-minute NSE bars from all 51 of these stocks, using ten look-ahead-free technical features and a purged chronological train/validation/test split. It produces BUY, SELL, HOLD or NO TRADE signals with per-prediction explanations derived from tree contributions. **RiskGuard** is a deterministic rule engine. It sizes each position by a 1% risk budget and an ATR-based stop, enforces risk/reward, single-stock, total-exposure and daily-loss limits, and returns APPROVED, REDUCED or REJECTED with human-readable reasons. A paper-trading broker gives every Google-authenticated user a ₹10,00,000 virtual account. The system is packaged as a single Docker image and runs on the Render cloud platform with continuous deployment from GitHub.
 
 Seven experiments evaluate the system:
 - **Capture.** Fixed-interval snapshots of the same stream hide 80–98% of events at a 100 ms interval, depending on the event rate.
 - **Persistence.** Asynchronous Parquet persistence keeps the processing path at a P99 of 65 µs at 1,000 events/s, while synchronous SQLite with full durability collapses throughput to about 60 events/s.
 - **Load.** On a two-core laptop, StreamX sustains its target rate up to 5,000 events/s, with P99 state-update latency of 29 µs and no data loss. It saturates at about 8,500–8,800 events/s, where a single CPU core is fully used.
-- **Model accuracy.** On the held-out period (5–23 November 2026), XGBoost achieves a macro-F1 of 0.390 against 0.248 for the majority-class baseline, and a directional hit-rate of 25.6% against 20.3% chance. Logistic regression performs about as well (0.391), which shows that the available signal is weak and mostly linear.
-- **Trading simulation.** Without costs, XGBoost signals combined with RiskGuard returned +2.43% with a maximum drawdown of −0.53%. At a realistic 10 bps round-trip cost, every active strategy lost money, while buy-and-hold gained +1.50%.
+- **Model accuracy.** On the held-out period (5–23 November 2026, 43,816 rows), XGBoost achieves a macro-F1 of 0.372 against 0.252 for the majority-class baseline, and a directional hit-rate of 22.8% against 19.6% chance. Logistic regression and a random forest perform the same (0.374 and 0.373), which shows that the available signal is weak and mostly linear. Training on 51 stocks instead of four did not improve accuracy.
+- **Trading simulation.** Without costs, XGBoost signals returned +5.1% over 12 trading days, above the 95th percentile of random entries, and RiskGuard halved their drawdown. At a realistic 10 bps round-trip cost, every active strategy lost money, while equal-weight buy-and-hold gained +1.9%.
 
 The project's contribution is a complete, measured and reproducible data-to-decision pipeline, together with an honest account of where it works and where it does not. It does not claim exchange-grade latency or a profitable trading strategy.
 
@@ -403,11 +403,11 @@ The feed rates used in the experiments are experimental settings, not exchange-f
 
 | ID | Requirement | Target | Measured (Chapter 8) |
 |---|---|---|---|
-| NF1 | Processing latency at normal load | P99 < 1 ms | 50 µs at 1,000 events/s (laptop, Exp. C); 26.7 µs on Render at 201 events/s (Exp. G) |
+| NF1 | Processing latency at normal load | P99 < 1 ms | 50 µs at 1,000 events/s (laptop, Exp. C); 30.3 µs on Render at 201 events/s (Exp. G) |
 | NF2 | Sustained throughput | ≥ 3,000 events/s with no loss | 4,998 events/s achieved at a 5,000 target, 0 dropped |
 | NF3 | Persistence must not block processing | Async, batched | Async path P99 65 µs vs 246 µs (sync WAL) and 21 ms (sync FULL) |
 | NF4 | Data integrity | No loss or duplicates below saturation | 0 dropped, 0 duplicates, recorded = processed in every run |
-| NF5 | Signal API response | < 200 ms server-side | 48 ms in-process (P50); 63 ms locally over HTTP; ~40 ms server time in the cloud (Tables 8.11–8.12) |
+| NF5 | Signal API response | < 200 ms server-side | 51 ms in-process (P50); 62 ms locally over HTTP; ~20 ms server time in the cloud (Tables 8.11–8.12) |
 | NF6 | Security | Verified identity, signed sessions, no secrets in source | Implemented; Section 5.10 |
 | NF7 | Reproducibility | Seeds, versions and scripts recorded | `thesis/benchmarks/`, Appendix 4 |
 | NF8 | Transparency | Simulated data labelled; disclaimer on every signal | Implemented |
@@ -616,7 +616,7 @@ PredictX computes ten scale-free features from the candle series (Table 6.2) and
 3. applies a documented **heuristic blend**:
    - +0.04 if order-book pressure agrees with a BUY or SELL view, −0.05 if it disagrees;
    - +0.02 if sample sentiment agrees;
-4. outputs **NO TRADE** if the adjusted confidence is below the threshold (the median validation confidence, 0.351) or annualised volatility exceeds 80%.
+4. outputs **NO TRADE** if the adjusted confidence is below the threshold (the median validation confidence, 0.356) or annualised volatility exceeds 80%.
 
 Every response includes the horizon (6 bars ≈ 30 simulated minutes), the model version and the disclaimer *"Educational prototype. Confidence is not a probability of profit. Not financial advice."*
 
@@ -785,11 +785,11 @@ Requests are validated with Pydantic. The API returns 422 for an invalid body, 4
 | Property | Value |
 |---|---|
 | Source | Yahoo Finance via `yfinance` (public historical data), cached as CSV in `backend/data/raw/` |
-| Instruments | RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS |
+| Instruments | The 51 Nifty 50 constituents (Yahoo tickers with the `.NS` suffix, e.g. RELIANCE.NS, M&M.NS); list in `config.NIFTY50` |
 | Frequency | 5-minute OHLCV bars, NSE session 09:15–15:30 IST (75 bars per day) |
 | Period | Late August to 23 November 2026 (about 60 trading days, the provider's 5-minute history window) |
-| Size | About 4,300 bars per symbol, about 17,200 bars in total |
-| Splits (rows after feature warm-up) | Train 11,659 · Validation 2,039 · Test 3,438 |
+| Size | About 4,320 bars per symbol, 220,311 bars in total |
+| Splits (rows after feature warm-up) | Train 148,580 · Validation 25,977 · Test 43,816 |
 | Test period | 5–23 November 2026 |
 | Licence / use | Public data used for non-commercial educational research |
 | Synthetic data | Only the live stream (Section 6.3); never used for training or evaluation |
@@ -834,7 +834,7 @@ With horizon H = 6 bars (30 minutes) and threshold θ = 0.25%:
 
 $$ y_t = \begin{cases} \text{BUY} & \text{if } C_{t+H}/C_t - 1 > \theta \\ \text{SELL} & \text{if } C_{t+H}/C_t - 1 < -\theta \\ \text{HOLD} & \text{otherwise} \end{cases} \qquad (6.2) $$
 
-Labels use bar (clock) time on close prices. θ is about the typical 30-minute move and is larger than a realistic intraday round-trip cost (about 5–10 bps), so a correct BUY label represents a move worth trading. Class balance: train is SELL 20.0% / HOLD 63.5% / BUY 16.5%, and test is SELL 20.5% / HOLD 59.3% / BUY 20.2%.
+Labels use bar (clock) time on close prices. θ is about the typical 30-minute move and is larger than a realistic intraday round-trip cost (about 5–10 bps), so a correct BUY label represents a move worth trading. Class balance: train is SELL 20.4% / HOLD 62.3% / BUY 17.3%, and test is SELL 19.2% / HOLD 60.8% / BUY 20.0%.
 
 **Purging.** The *H* rows before each split boundary are removed, because their labels look into the next partition [10].
 
@@ -850,9 +850,9 @@ Labels use bar (clock) time on close prices. θ is about the typical 30-minute m
 - **XGBoost (PredictX):**
   - parameters: `n_estimators` up to 400, `max_depth` 4, `learning_rate` 0.05, `subsample` 0.8, `colsample_bytree` 0.8, `min_child_weight` 5;
   - objective `multi:softprob`, balanced sample weights, early stopping after 40 rounds without improvement in validation log loss, `random_state` 42;
-  - training stopped at the 10th tree (`best_iteration` = 9), which suggests that most of the learnable signal is shallow.
+  - training stopped at the 15th tree (`best_iteration` = 14), which suggests that most of the learnable signal is shallow.
 - **Selection.** Hyperparameters were fixed from validation behaviour only. The test set was used once, for the reported numbers.
-- **NO TRADE threshold.** The median of the maximum class probability on the validation set, clipped to [0.34, 0.65], which gives 0.351.
+- **NO TRADE threshold.** The median of the maximum class probability on the validation set, clipped to [0.34, 0.65], which gives 0.356.
 
 ## 6.8 Evaluation Protocol
 
@@ -928,13 +928,13 @@ The reward multiple grows with the model's edge over the uninformed level of 1/3
 
 ## 6.11 Trading Simulation Design (Experiment E)
 
-- **Capital and timing.** One shared ₹10,00,000 account. The strategies are long-only and are simulated over the 3,438 test bars. A signal is formed at the close of bar *t* and executed at the **open of bar t + 1**, which avoids using information before it is available.
+- **Capital and timing.** One shared ₹10,00,000 account. The strategies are long-only and are simulated over the 43,816 test bars (864 timestamps × 51 stocks). Because each entry uses 20% of equity, at most about five positions can be open at once; when cash runs out, later signals are skipped, exactly as in a real account. A signal is formed at the close of bar *t* and executed at the **open of bar t + 1**, which avoids using information before it is available.
 - **Costs.** Cost per side = half of the round-trip cost in bps, applied to the notional value on entry and on exit. Indian discount-broker intraday costs (brokerage, STT, exchange and SEBI charges, GST and stamp duty) are roughly 5–8 bps per round trip for orders of this size before slippage. 10 bps is used as the realistic base case.
 - **Strategies:**
 
   | Strategy | Entry | Size | Exit |
   |---|---|---|---|
-  | Buy-and-hold | 25% of capital per symbol at the first test bar | fixed | held to the end |
+  | Buy-and-hold | equal weight (1/51 of capital) in every stock at the first test bar | fixed | held to the end |
   | XGBoost raw | model view = BUY | 20% of equity | after H = 6 bars |
   | XGBoost + RiskGuard | BUY with confidence ≥ threshold and annualised volatility ≤ 80%, approved by the production `evaluate()` function | RiskGuard quantity | stop-loss, target, or after H bars (stop checked first within a bar) |
   | Momentum rule | `ret_5` > θ | 20% of equity | after H bars |
@@ -1019,7 +1019,7 @@ The small size is deliberate. Each module fits in a single reading, which matter
 
 - **`data.py`.** `load_history(symbol, refresh)` returns cached CSV bars if present; otherwise it downloads 60 days of 5-minute data from Yahoo Finance. If the download fails it generates a synthetic series, so the application can still start, and records the source as `synthetic` in `sources.json`, which the UI displays. All reported results use **real** data (`sources.json` = yfinance).
 - **`features.py`.** Vectorised pandas implementations of the ten features (Table 6.2) and the labels (Equation 6.2).
-- **`train.py`.** Builds the purged, per-symbol chronological split, trains XGBoost with balanced weights and early stopping, computes the model card, and saves `xgb_model.json` and `metrics.json`. The model card holds accuracy, macro-F1, the baselines, directional hit-rate and its chance level, confident-signal precision and coverage, the threshold, the confusion matrix, the classification report and feature importance. A full training run takes about 1–2 seconds on the laptop.
+- **`train.py`.** Builds the purged, per-symbol chronological split, trains XGBoost with balanced weights and early stopping, computes the model card, and saves `xgb_model.json` and `metrics.json`. The model card holds accuracy, macro-F1, the baselines, directional hit-rate and its chance level, confident-signal precision and coverage, the threshold, the confusion matrix, the classification report and feature importance. A full training run on the 51 stocks takes about 12 seconds on the laptop.
 - **`model.py`.** `Predictor.predict()` builds features from the live candle frame, computes probabilities and per-feature contributions (`pred_contribs=True`), turns the top four into sentences, applies the pressure and sentiment blend and the NO TRADE gate, and returns the response with the disclaimer.
 - **`sentiment.py`.** A finance lexicon (about 25 positive and 20 negative terms) scores four sample headlines per symbol, each prefixed "Sample:".
 
@@ -1277,19 +1277,19 @@ Integrity (✔): in all 21 runs, Parquet rows = unique `seq` = events processed,
 
 ## 8.8 Experiment D: Model Evaluation
 
-**Setup.** The models are trained on the training split and evaluated once on the held-out test split (5–23 November 2026, 3,438 rows; class distribution SELL 20.5%, HOLD 59.3%, BUY 20.2%). Retraining XGBoost with the documented settings reproduced the saved production model exactly (probabilities identical to within 10⁻⁵).
+**Setup.** The models are trained on the training split of all 51 stocks and evaluated once on the held-out test split (5–23 November 2026, 43,816 rows, about 860 per stock; class distribution SELL 19.2%, HOLD 60.8%, BUY 20.0%). Retraining XGBoost with the documented settings reproduced the saved production model exactly (probabilities identical to within 10⁻⁵).
 
 **Table 8.7: Experiment D: model results on the test set**
 
 | Model | Accuracy | Macro precision | Macro recall | **Macro-F1** | BUY/SELL coverage | Directional hit-rate (chance) | Log loss |
 |---|---|---|---|---|---|---|---|
-| Majority class (always HOLD) | **0.593** | 0.198 | 0.333 | 0.248 | 0% | – | – |
-| Stratified random (50 seeds) | 0.451 | 0.334 | 0.334 | 0.333 | 36.7% | 20.4% (20.4%) | – |
-| Momentum rule (5-bar return) | 0.502 | 0.382 | 0.380 | 0.380 | 36.1% | 25.2% (20.3%) | – |
-| RSI rule (30/70) | 0.575 | **0.406** | 0.363 | 0.337 | 12.5% | **30.0%** (20.4%) | – |
-| Logistic regression (balanced) | 0.465 | 0.394 | 0.396 | **0.391** | 49.2% | 25.4% (20.3%) | 1.084 |
-| Random forest (balanced) | 0.424 | 0.394 | 0.397 | 0.381 | 60.0% | 24.5% (20.3%) | **1.076** |
-| **XGBoost (PredictX)** | 0.438 | 0.400 | **0.405** | **0.390** | 57.7% | 25.6% (20.4%) | 1.085 |
+| Majority class (always HOLD) | **0.608** | 0.203 | 0.333 | 0.252 | 0% | – | – |
+| Stratified random (50 seeds) | 0.453 | 0.333 | 0.333 | 0.333 | 37.7% | 19.6% (19.6%) | – |
+| Momentum rule (5-bar return) | 0.494 | 0.361 | 0.360 | 0.360 | 35.3% | 22.1% (19.6%) | – |
+| RSI rule (30/70) | 0.573 | 0.372 | 0.350 | 0.324 | 12.7% | **24.6%** (19.5%) | – |
+| Logistic regression (balanced) | 0.465 | 0.376 | 0.377 | **0.374** | 46.6% | 22.8% (19.6%) | 1.090 |
+| Random forest (balanced) | 0.432 | **0.384** | **0.385** | 0.373 | 56.0% | 23.0% (19.6%) | **1.084** |
+| **XGBoost (PredictX)** | 0.433 | 0.382 | 0.383 | 0.372 | 55.3% | 22.8% (19.6%) | 1.088 |
 
 ![Figure 8.7: Model comparison](figures/fig_D_models.png)
 
@@ -1301,29 +1301,31 @@ Integrity (✔): in all 21 runs, Parquet rows = unique `seq` = events processed,
 
 | Actual ↓ / Predicted → | SELL | HOLD | BUY |
 |---|---|---|---|
-| SELL (704) | **280** (39.8%) | 214 | 210 |
-| HOLD (2,040) | 582 | **1,000** (49.0%) | 458 |
-| BUY (694) | 227 | 240 | **227** (32.7%) |
+| SELL (8,426) | **2,869** (34.0%) | 3,078 | 2,479 |
+| HOLD (26,635) | 7,493 | **13,457** (50.5%) | 5,685 |
+| BUY (8,755) | 3,035 | 3,066 | **2,654** (30.3%) |
 
-**Table 8.8: Experiment D: XGBoost per-symbol results**
+**Table 8.8: Experiment D: XGBoost per-symbol results (summary; all 51 stocks in Appendix 4, Table A4.2)**
 
-| Symbol | Test rows | Accuracy | Macro-F1 | Majority-class macro-F1 | Directional hit-rate |
-|---|---|---|---|---|---|
-| RELIANCE | 861 | 0.477 | 0.356 | 0.272 | 17.6% |
-| TCS | 858 | 0.417 | 0.391 | 0.238 | 28.6% |
-| INFY | 859 | 0.442 | **0.415** | 0.235 | **31.0%** |
-| HDFCBANK | 860 | 0.416 | 0.359 | 0.246 | 22.8% |
+| Group | Stocks | Macro-F1 | Directional hit-rate |
+|---|---|---|---|
+| Best: ONGC, ASIANPAINT, SBILIFE | 3 | 0.477, 0.425, 0.417 | 31.8%, 26.1%, 25.5% |
+| Median stock | 51 | 0.368 (interquartile range 0.345–0.380) | – |
+| Worst: TMPV, ICICIBANK, SHRIRAMFIN | 3 | 0.314, 0.309, 0.281 | 21.2%, 15.3%, 19.9% |
+| Beat the majority-class macro-F1 | **51 of 51** | | |
+| Directional hit-rate below the pooled chance level (19.6%) | 8 of 51 | | e.g. LT 13.7%, ADANIPORTS 14.9% |
 
 **Table 8.9: Experiment D: confidence calibration (XGBoost, maximum class probability)**
 
 | Confidence bin | Rows | Mean confidence | Observed accuracy |
 |---|---|---|---|
-| < 0.36 | 2,074 | 0.345 | 0.387 |
-| 0.36 – 0.39 | 1,016 | 0.374 | 0.467 |
-| 0.39 – 0.42 | 343 | 0.397 | 0.668 |
-| 0.42 – 0.45 | 5 | 0.430 | 0.400 |
+| < 0.36 | 24,947 | 0.347 | 0.343 |
+| 0.36 – 0.39 | 14,392 | 0.371 | 0.519 |
+| 0.39 – 0.42 | 3,953 | 0.402 | 0.663 |
+| 0.42 – 0.45 | 516 | 0.426 | 0.671 |
+| 0.45 – 0.50 | 8 | 0.456 | 0.250 |
 
-Expected calibration error (ECE) = 0.080. Signals above the NO TRADE threshold (0.351): coverage 28.9% of bars, precision 29.5%.
+Expected calibration error (ECE) = 0.077. BUY/SELL signals above the NO TRADE threshold (0.356): coverage 20.5% of bars, precision 26.9%.
 
 ![Figure 8.9: Feature importance](figures/fig_D_importance.png)
 
@@ -1334,35 +1336,55 @@ Expected calibration error (ECE) = 0.080. Signals above the NO TRADE threshold (
 **Figure 8.10: Reliability of model confidence**
 
 **Observations.**
-1. **Accuracy is the wrong metric here.** The majority-class model scores the highest accuracy (59.3%) while never predicting a trade. Every useful model scores lower on accuracy because balanced weighting makes it predict BUY and SELL.
-2. **There is a modest but real edge.** XGBoost's macro-F1 (0.390) is 57% above the majority baseline (0.248) and 17% above random (0.333). Its BUY/SELL hit-rate (25.6%) beats chance (20.4%) by 5.2 percentage points over about 1,980 directional calls.
-3. **XGBoost is not better than logistic regression** (0.391), and a random forest is similar (0.381). With ten technical features on 5-minute bars, the learnable signal is weak and mostly linear. Early stopping at 10 trees points the same way. This is reported as found: the value of PredictX lies in the explanation pipeline and the baseline-aware evaluation, not in a superior model.
-4. **The simple rules are competitive in parts.** The RSI rule has the highest directional precision (30.0%) but trades rarely (12.5% of bars). The momentum rule reaches a macro-F1 of 0.380 with no training at all.
-5. **The edge varies by symbol:** strongest for INFY and TCS, and weakest for RELIANCE, where the directional hit-rate (17.6%) is *below* chance. A per-symbol deployment decision would be needed in practice.
-6. **Confidence is informative but miscalibrated.** Accuracy rises from 39% to 67% across the bins, so higher confidence does mean more reliable predictions, but the probabilities are under-confident and compressed into 0.33–0.43. Raw probabilities must therefore not be shown as probabilities of profit. RiskGuard uses confidence only as a relative scale, through the edge over 1/3.
+1. **Accuracy is the wrong metric here.** The majority-class model scores the highest accuracy (60.8%) while never predicting a trade. Every useful model scores lower on accuracy because balanced weighting makes it predict BUY and SELL.
+2. **There is a modest but real edge.** XGBoost's macro-F1 (0.372) is 48% above the majority baseline (0.252) and 12% above random (0.333). Its BUY/SELL hit-rate (22.8%) beats chance (19.6%) by 3.2 percentage points over about 24,200 directional calls. With 13 times more test rows than the first four-stock evaluation, this estimate is far less noisy.
+3. **XGBoost is not better than the simpler models.** Logistic regression (0.374) and a random forest (0.373) are statistically indistinguishable from it. With ten technical features on 5-minute bars, the learnable signal is weak and mostly linear, and early stopping at 15 trees points the same way. This is reported as found: the value of PredictX lies in the explanation pipeline and the baseline-aware evaluation, not in a superior model.
+4. **The simple rules are competitive in parts.** The momentum rule reaches a macro-F1 of 0.360 with no training at all, only 0.012 below XGBoost. The RSI rule has the highest directional precision (24.6%) but trades rarely (12.7% of bars).
+5. **The edge varies by stock.** XGBoost beats the majority-class macro-F1 on all 51 stocks, but its directional hit-rate falls below the pooled chance level on 8 of them (for example LT and ADANIPORTS). The spread (macro-F1 0.28 to 0.48) is wide enough that a per-stock deployment decision would be needed in practice.
+6. **Confidence is informative but miscalibrated.** Accuracy rises from 34% to 67% across the populated bins, so higher confidence does mean more reliable predictions, but the probabilities are under-confident and compressed into 0.33–0.46. Raw probabilities must therefore not be shown as probabilities of profit. RiskGuard uses confidence only as a relative scale, through the edge over 1/3.
 7. **The most important features are volatility-related** (ATR %, volume z-score, 20-bar volatility), ahead of momentum. The model mostly learns *when large moves are likely*, which helps separate HOLD from BUY/SELL more than it separates BUY from SELL.
+
+### 8.8.1 Experiment D2: Does Training on More Stocks Help?
+
+The first version of PredictX was trained on four stocks (RELIANCE, TCS, INFY, HDFCBANK). The production model is trained on all 51. Both models were scored on **identical** test rows (`compare_models.py`), and a paired bootstrap (500 resamples of test rows) gives an interval for the difference.
+
+**Table 8.8a: Experiment D2: four-stock vs 51-stock model on the same test rows (macro-F1; directional hit-rate in brackets)**
+
+| Test rows | Rows | Model trained on 4 stocks | Model trained on 51 stocks | Difference (51 − 4), 95% bootstrap interval |
+|---|---|---|---|---|
+| Original 4 stocks | 3,438 | **0.390** (25.6%) | 0.369 (22.8%) | −0.021 [−0.040, −0.003] |
+| 47 added stocks (unseen by the 4-stock model) | 40,378 | 0.374 (23.5%) | 0.372 (22.8%) | −0.002 [−0.008, +0.003] |
+| All 51 stocks | 43,816 | 0.376 (23.7%) | 0.372 (22.8%) | −0.004 [−0.008, +0.001] |
+
+**Observations.**
+1. **Thirteen times more training data did not improve the model.** On the 47 added stocks, the four-stock model, which never saw them, is as good as the model trained on them. Because every feature is scale-free (Section 6.5), the pattern the model learns is generic to large-cap NSE stocks, not specific to any one of them.
+2. **Pooling cost a little on the original four stocks** (−0.021, an interval that excludes zero). Part of the earlier four-stock result was therefore fitted to those stocks' particular behaviour in that period.
+3. **Why the 51-stock model is still used in production:**
+   - every tradable stock is now in-sample, so no signal needs an "out-of-sample" warning;
+   - its reported performance rests on 43,816 test rows rather than 3,438, so it is the more trustworthy estimate.
+4. The bootstrap resamples individual rows, which ignores autocorrelation between nearby bars. The intervals are therefore somewhat too narrow and should be read as indicative.
 
 ## 8.9 Experiment E: Paper-Trading Simulation with Costs
 
 **Setup.** As described in Section 6.11:
-- test period from 5 November 2026 10:50 IST to 23 November 2026 14:50 IST: 12 trading days, 863 timestamps × 4 symbols;
+- test period from 5 November 2026 10:45 IST to 23 November 2026 14:50 IST: 12 trading days, 864 timestamps × 51 stocks;
 - starting capital ₹10,00,000;
 - signals at the bar close, fills at the next bar's open;
 - round-trip costs of 0, 5, 10 and 20 bps.
 
 **Table 8.10: Experiment E: trading simulation by cost level**
 
-| Strategy | Trades | Return 0 bps | Return 5 bps | **Return 10 bps** | Return 20 bps | Sharpe (10 bps) | Max DD (10 bps) | Win rate (10 bps) | Avg trade, gross |
+| Strategy | Trades (10 bps) | Return 0 bps | Return 5 bps | **Return 10 bps** | Return 20 bps | Sharpe (10 bps) | Max DD (10 bps) | Win rate (10 bps) | Avg trade, gross |
 |---|---|---|---|---|---|---|---|---|---|
-| Buy & hold (25% per stock) | 4 | +1.60% | +1.55% | **+1.50%** | +1.40% | 1.89 | −3.52% | 50.0% | +1.61% |
-| XGBoost raw (BUY view) | 294 | +2.14% | −0.82% | −3.67% | −9.16% | −7.48 | −4.43% | 38.4% | +0.036% |
-| **XGBoost + RiskGuard** | 223 | **+2.43%** | **+0.20%** | −1.97% | −6.18% | −7.14 | −3.13% | 41.3% | +0.052% |
-| Momentum rule | 194 | +0.68% | −1.25% | −3.14% | −6.82% | −8.14 | −3.67% | 38.7% | +0.018% |
-| RSI rule (< 30) | 51 | +0.75% | +0.24% | −0.27% | −1.28% | −1.97 | −0.86% | 47.1% | +0.073% |
-| Random entries (100 seeds, mean) | 387 | +0.80% | −3.02% | −6.68% | −13.61% | −14.26 | – | – | – |
-| Random, 5th–95th percentile | | −0.86% to +2.41% | −4.52% to −1.47% | −8.06% to −5.25% | −14.95% to −12.14% | | | | |
+| Buy & hold (equal weight, 51 stocks) | 51 | +1.97% | +1.92% | **+1.87%** | +1.78% | 3.68 | −1.77% | 62.7% | +2.22% |
+| XGBoost raw (BUY view) | 1,803 | **+5.14%** | −3.84% | −10.55% | −25.70% | −14.34 | −11.29% | 37.9% | +0.016% |
+| **XGBoost + RiskGuard** | 840 | +4.50% | −2.27% | −7.74% | −18.57% | −14.63 | −7.93% | 37.1% | +0.027% |
+| Momentum rule | 1,415 | +1.51% | −5.82% | −10.86% | −24.29% | −15.24 | −11.48% | 37.8% | +0.025% |
+| RSI rule (< 30) | 479 | +2.45% | **−1.76%** | −5.15% | −12.16% | −10.39 | −6.36% | 38.2% | +0.032% |
+| Random entries (100 seeds, mean) | 2,462 | +2.00% | −6.07% | −13.71% | −26.96% | −19.05 | – | – | – |
+| Random, 5th–95th percentile | | −1.32% to +4.68% | −9.83% to −2.43% | −16.93% to −10.80% | −29.36% to −24.41% | | | | |
 
-Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum drawdown of −0.53%. Its exits were 76 stop-losses, 58 targets and 89 time exits.
+Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.33 (raw XGBoost 6.48) and a maximum drawdown of −1.67% (raw −3.42%). Its exits were 224 stop-losses, 112 targets and 470 time exits.
 
 ![Figure 8.11: Equity curves](figures/fig_E_equity.png)
 
@@ -1373,11 +1395,11 @@ Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum draw
 **Figure 8.12: Sensitivity of strategy returns to transaction costs**
 
 **Observations.**
-1. **RiskGuard adds value to the same signals.** Compared with raw XGBoost entries, it gave higher returns at every cost level (+2.43% vs +2.14% at zero cost, and +1.70 percentage points at 10 bps). It took fewer trades (223 vs 294), reduced the zero-cost maximum drawdown from −1.59% to −0.53% and roughly doubled the Sharpe ratio. Stops and targets resolved 60% of trades before the time exit.
-2. **The model's gross edge is real but small.** Average gross returns per trade were +3.6 bps (raw) and +5.2 bps (with RiskGuard), against about +1 bp for random entries. The zero-cost RiskGuard result (+2.43%) lies just above the 95th percentile of random entry (+2.41%), which is *weak* statistical evidence over only 12 trading days.
-3. **Realistic costs eliminate it.** A round trip costs 5–10 bps, which equals or exceeds the gross edge per trade. At 10 bps, every active strategy lost money, while buy-and-hold made +1.50% in a rising market. This is the most important result of the evaluation, and it agrees with the literature's caution that strategies on short-horizon predictions must be judged after costs.
-4. **Fewer, more selective trades degrade more slowly.** The RSI rule (51 trades) lost only 0.27% at 10 bps. Lowering trade frequency, or requiring the expected move to exceed the round-trip cost before entering, is the clearest improvement path.
-5. **Sharpe ratios over 12 days are unreliable.** Annualising 863 bar-returns amplifies noise, so the Sharpe values (for example 8.9 or −7.1) should be read as relative rankings, not as achievable performance.
+1. **Without costs, the model's signals beat chance.** Raw XGBoost BUY entries returned +5.14%, above the 95th percentile of 100 random-entry runs (+4.68%) and well above buy-and-hold (+1.97%). This is stronger evidence than in the first four-stock evaluation, because it rests on 51 stocks and about 1,800 trades, but it still covers only 12 trading days.
+2. **RiskGuard trades return for risk.** On the same signals it took fewer than half the trades (840 vs 1,803). At zero cost it returned slightly less (+4.50% vs +5.14%), but with half the maximum drawdown (−1.67% vs −3.42%) and a higher Sharpe ratio (8.33 vs 6.48). Once costs are included it is better at every level: −2.27% vs −3.84% at 5 bps, −7.74% vs −10.55% at 10 bps and −18.57% vs −25.70% at 20 bps. Stops and targets resolved 42% of its trades before the time exit.
+3. **Realistic costs still eliminate the edge.** Average gross returns per trade are only +1.6 bps (raw) and +2.7 bps (RiskGuard), while a round trip costs 5–10 bps. At 10 bps every active strategy lost money, while equal-weight buy-and-hold made +1.87%. This is the most important result of the evaluation, it is unchanged from the four-stock evaluation, and it agrees with the literature's caution that strategies on short-horizon predictions must be judged after costs.
+4. **Fewer, more selective trades degrade more slowly.** The RSI rule (479 trades) has the highest gross return per trade (+3.2 bps) and the smallest loss at 5 and 10 bps. Lowering trade frequency, or requiring the expected move to exceed the round-trip cost before entering, is the clearest improvement path.
+5. **Sharpe ratios over 12 days are unreliable.** Annualising 864 bar-returns amplifies noise, so the Sharpe values (for example 8.3 or −14.6) should be read as relative rankings, not as achievable performance.
 6. **Limitations:**
    - one short test period in a mostly rising market;
    - no market impact or queue-position modelling;
@@ -1393,21 +1415,21 @@ Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum draw
 
 | Step | Calls | P50 | P95 | P99 | Share of a full signal (P50) |
 |---|---|---|---|---|---|
-| Feature build over 400 bars (pandas) | 300 | 24.4 ms | 71.2 ms | 92.6 ms | ~51% |
-| XGBoost `predict_proba`, 1 row (scikit-learn wrapper) | 1,000 | 5.47 ms | 15.8 ms | 46.3 ms | ~11% |
-| XGBoost `inplace_predict`, 1 row (native booster) | 1,000 | **0.97 ms** | 1.65 ms | 3.42 ms | (alternative) |
-| XGBoost per-feature contributions, 1 row | 300 | 7.04 ms | 9.79 ms | 12.2 ms | ~15% |
-| **Full signal with explanation** (`Predictor.predict`) | 300 | **47.8 ms** | 72.5 ms | 176.9 ms | 100% |
-| **RiskGuard `evaluate`** | 20,000 | **21.7 µs** | 65.4 µs | 136.6 µs | – |
+| Feature build over 400 bars (pandas) | 300 | 20.5 ms | 42.7 ms | 59.9 ms | ~40% |
+| XGBoost `predict_proba`, 1 row (scikit-learn wrapper) | 1,000 | 5.34 ms | 10.6 ms | 19.7 ms | ~10% |
+| XGBoost `inplace_predict`, 1 row (native booster) | 1,000 | **1.02 ms** | 2.54 ms | 6.44 ms | (alternative) |
+| XGBoost per-feature contributions, 1 row | 300 | 7.25 ms | 11.3 ms | 34.1 ms | ~14% |
+| **Full signal with explanation** (`Predictor.predict`) | 300 | **51.1 ms** | 73.5 ms | 94.0 ms | 100% |
+| **RiskGuard `evaluate`** | 20,000 | **23.5 µs** | 71.1 µs | 172.5 µs | – |
 
 **Observations.**
-1. **RiskGuard is effectively free.** At about 22 µs, a pure-Python rule engine adds nothing noticeable to an order, so deterministic risk checks cost no performance.
-2. **The signal path is dominated by overhead, not by the model.** Recomputing ten indicators over 400 bars in pandas takes half the time, and the scikit-learn wrapper is 5.6× slower than the native `inplace_predict` for a single row. Profiling has therefore found two concrete optimisations:
+1. **RiskGuard is effectively free.** At about 24 µs, a pure-Python rule engine adds nothing noticeable to an order, so deterministic risk checks cost no performance.
+2. **The signal path is dominated by overhead, not by the model.** Recomputing ten indicators over 400 bars in pandas takes about 40% of the time, and the scikit-learn wrapper is 5.3× slower than the native `inplace_predict` for a single row. Profiling has therefore found two concrete optimisations:
    - compute features incrementally on the last bar only;
    - call the booster directly.
 
    Together they would bring a signal to roughly 10 ms. This is the kind of profiling-led optimisation that should come before any C++ rewrite.
-3. At about 48 ms, the full signal is well within the 200 ms server-side target (NF5), and signals are computed on request, not per event, so this cost never touches the 9–25 µs event path.
+3. At about 51 ms, the full signal is well within the 200 ms server-side target (NF5), and signals are computed on request, not per event, so this cost never touches the 9–25 µs event path.
 
 ## 8.11 Experiment G: Cloud Deployment
 
@@ -1416,37 +1438,39 @@ Without costs, XGBoost + RiskGuard had a Sharpe ratio of 8.88 and a maximum draw
 - **HTTP.** For each endpoint: 3 warm-up requests, then 50 sequential HTTPS requests on a keep-alive connection, after signing in as a guest.
 - **WebSocket.** The arrival times of 41 messages on `/ws/market`.
 - **In-cloud pipeline.** The production service's own StreamX metrics were read from `/api/monitor/metrics`.
+- **Configuration.** Both servers ran the 51-stock universe and the 51-stock model (`xgb-20261123-2328`). The earlier four-stock run is kept in `G_api_4stocks.json`.
 
 **Table 8.12: Experiment G: client-observed API latency, local vs cloud (P50 / P95, ms)**
 
 | Endpoint | Response size | Local P50 / P95 | Render cloud P50 / P95 | Cloud − local (P50) |
 |---|---|---|---|---|
-| `GET /api/health` | 0.3 KB | 3.5 / 5.3 | 160.4 / 184.1 | 157 |
-| `GET /api/market/{s}/snapshot` | 0.4 KB | 3.7 / 5.5 | 161.0 / 196.0 | 157 |
-| `GET /api/market/{s}/candles` (400) | 49 KB | 19.2 / 33.0 | 167.5 / 231.6 | 148 |
-| `GET /api/predict/{s}` | 1.4 KB | 63.1 / 78.7 | 200.9 / 295.0 | 138 |
-| `POST /api/risk/evaluate` | 1.9 KB | 89.6 / 276.0 | 200.8 / 289.8 | 111 |
-| `GET /api/paper/portfolio` | 0.2 KB | 7.2 / 10.2 | 160.3 / 187.3 | 153 |
+| `GET /api/health` | 2.3 KB | 4.8 / 7.4 | 156.7 / 241.8 | 152 |
+| `GET /api/market/{s}/snapshot` | 0.4 KB | 4.2 / 7.2 | 158.5 / 209.3 | 154 |
+| `GET /api/market/{s}/candles` (400) | 49 KB | 21.0 / 46.0 | 164.8 / 436.1 | 144 |
+| `GET /api/predict/{s}` | 1.4 KB | 62.3 / 91.8 | 176.9 / 259.8 | 115 |
+| `POST /api/risk/evaluate` | 2.0 KB | 71.2 / 91.6 | 200.7 / 274.9 | 130 |
+| `GET /api/paper/portfolio` | 0.2 KB | 6.8 / 11.6 | 153.9 / 171.1 | 147 |
 
 | Measurement | Local | Render cloud |
 |---|---|---|
-| First request (`/api/health`, service already awake) | 17 ms | 1,178 ms (TLS and connection setup, plus a possible wake-up) |
-| WebSocket connect | 71 ms | 442 ms |
-| `/ws/market` message interval (server sends every 250 ms) | P50 252 ms, mean 263 ms | P50 1.8 ms, mean 502 ms (messages arrive in bursts) |
-| In-pipeline processing latency P50 / P95 / P99 | 19.1 / 38.9 / 104.4 µs (200 events/s) | **8.4 / 16.4 / 26.7 µs** (201 events/s) |
-| In-pipeline end-to-end latency P50 / P99 | 0.36 / 7.3 ms | **0.07 / 0.96 ms** |
-| Events processed / dropped (service uptime) | 3,146 / 0 (16 s) | 154,439 / 0 (773 s) |
-| Events recorded to Parquet | 3,112 (+34 buffered) | 154,079 (+360 buffered) in 153 files |
+| First request (`/api/health`) | 5 ms | 7,425 ms (TLS and connection setup on a service deployed five minutes earlier) |
+| Slowest single request (max over 50, any endpoint) | 109 ms | 11,112 ms (three stalls of about 10 s) |
+| WebSocket connect | 9 ms | 989 ms |
+| `/ws/market` message interval (server sends every 250 ms) | P50 250 ms, mean 252 ms | P50 234 ms, mean 519 ms (occasional long gaps) |
+| In-pipeline processing latency P50 / P95 / P99 | 21.0 / 40.2 / 123.1 µs (201 events/s) | **10.5 / 17.7 / 30.3 µs** (201 events/s) |
+| In-pipeline end-to-end latency P50 / P99 | 0.35 / 4.6 ms | **0.07 / 0.51 ms** |
+| Events processed / dropped (service uptime) | 2,667 / 0 (15 s) | 62,594 / 0 (315 s) |
+| Events recorded to Parquet | 1,902 (+765 buffered) | 61,881 (+713 buffered) in 62 files |
 
 ![Figure 8.13: API latency](figures/fig_G_api.png)
 
 **Figure 8.13: Client-observed API latency: local vs Render cloud (median)**
 
 **Observations.**
-1. **The network sets the floor in the cloud.** The trivial health endpoint takes 160 ms from Kolkata to Singapore and back through Render's proxy. That is about 157 ms more than locally, and the same overhead appears on every endpoint. For a user interface this is acceptable. For latency-sensitive trading it is exactly why the literature emphasises colocation [1, 2, 6].
-2. **The cloud server computes faster than the laptop.** Server-side work (cloud P50 minus the health baseline) is about 40 ms for a signal, against about 60 ms locally. The in-pipeline P50 is 8.4 µs in the cloud against 19 µs on the laptop at the same rate. The Linux container also shows end-to-end latency about 5× lower than Windows with the Proactor event loop, which is consistent with the coarser timer behaviour of Windows (Section 7.11).
-3. **WebSocket delivery through the proxy is bursty.** The server sends every 250 ms, but cloud messages arrived in groups (P50 gap 1.8 ms, mean gap 502 ms). This is consistent with proxy or TCP buffering and with CPU throttling on the free plan. The terminal handles this because each message is a full snapshot rather than a delta.
-4. **Integrity held in the cloud too:** 154,439 events processed with zero drops over 13 minutes, and every event either recorded or still in the buffer.
+1. **The network sets the floor in the cloud.** The trivial health endpoint takes 157 ms from Kolkata to Singapore and back through Render's proxy. That is about 152 ms more than locally, and the same overhead appears on every endpoint. For a user interface this is acceptable. For latency-sensitive trading it is exactly why the literature emphasises colocation [1, 2, 6].
+2. **The cloud server computes faster than the laptop.** Server-side work (cloud P50 minus the health baseline) is about 20 ms for a signal, against about 58 ms locally. The in-pipeline P50 is 10.5 µs in the cloud against 21 µs on the laptop at the same rate. The Linux container also shows end-to-end latency about 5× lower than Windows with the Proactor event loop, which is consistent with the coarser timer behaviour of Windows (Section 7.11).
+3. **The free plan has occasional long stalls.** Typical cloud requests are steady (P95 within about 100 ms of P50), but three requests took about 10 s and WebSocket gaps were sometimes far longer than the 250 ms send interval (mean 519 ms against a median of 234 ms). An earlier run (`G_api_4stocks.json`) showed the same pattern as bursts of messages. This is consistent with CPU throttling and proxy buffering on the free plan. The terminal tolerates it because each message is a full snapshot rather than a delta. A paid instance would be needed for consistent latency.
+4. **Integrity held in the cloud too:** 62,594 events processed with zero drops, and every event either recorded or still in the buffer. An earlier, longer cloud run processed 154,439 events, also with zero drops.
 
 ## 8.12 Functional Testing
 
@@ -1480,7 +1504,7 @@ The end-to-end suite verifies, among other things:
 | 9 | Large latency values overflowed tiles | Visual check | Values always formatted in µs | Switch to ms above 1,000 µs |
 | 10 | Sign-in screen appeared late | Visual check | Authentication started after the chart loaded | Authentication starts on page load |
 | 11 | User could not buy when the AI said SELL or NO TRADE | User testing | RiskGuard rule 1 rejected every BUY that disagreed with the model | Advisory gate: warning, 25% size, minimum-R:R target (Section 6.10) |
-| 12 | Only four stocks could be traded | User testing | Symbol list fixed to the four training stocks | Tradable universe extended to the Nifty 50 (51 tickers), with a searchable watchlist; the model stays trained on the four |
+| 12 | Only four stocks could be traded | User testing | Symbol list fixed to the four training stocks | Tradable universe extended to the Nifty 50 (51 tickers), with a searchable watchlist; model retrained on all 51 (Experiment D2) |
 
 ## 8.13 Chapter Summary
 
@@ -1489,10 +1513,10 @@ The end-to-end suite verifies, among other things:
 | Event capture preserves detail | Exp. A | 100 ms snapshots hide 80–98% of events; event capture hides none |
 | Persistence off the hot path | Exp. B | Async: P99 65 µs at 1,000 events/s; sync FULL: 60 events/s maximum |
 | Throughput and latency | Exp. C | 5,000 events/s with P99 29 µs and no loss; saturates at about 8.8k events/s on one core |
-| Model value vs baselines | Exp. D | Macro-F1 0.390 vs 0.248 (majority) / 0.333 (random); equal to logistic regression |
-| Trading value after costs | Exp. E | RiskGuard improves the same signals at every cost level, but no active strategy beats buy-and-hold at a realistic 10 bps |
-| Decision-path cost | Exp. F | RiskGuard 22 µs; full signal 48 ms, half of it feature recomputation |
-| Cloud behaviour | Exp. G | ~160 ms network floor; cloud pipeline P50 8.4 µs; 154k events with no drops |
+| Model value vs baselines | Exp. D, D2 | Macro-F1 0.372 vs 0.252 (majority) / 0.333 (random); equal to logistic regression; 51-stock training no better than four-stock |
+| Trading value after costs | Exp. E | Zero-cost signals beat random entry; RiskGuard halves drawdown and is better at every non-zero cost, but no active strategy beats buy-and-hold at a realistic 10 bps |
+| Decision-path cost | Exp. F | RiskGuard 24 µs; full signal 51 ms, 40% of it feature recomputation |
+| Cloud behaviour | Exp. G | ~157 ms network floor; cloud pipeline P50 10.5 µs; zero drops; occasional ~10 s stalls on the free plan |
 | Correctness | Tests | 18 unit + 116 end-to-end checks passing locally and in production |
 
 <div style="page-break-after: always;"></div>
@@ -1507,9 +1531,9 @@ The end-to-end suite verifies, among other things:
 
 **Is the cloud appropriate?** For this workload, yes. One container handles thousands of events per second at microsecond processing latency, using under 160 MB of memory, at zero cost. The cloud adds about 160 ms of network latency for a user in Kolkata, which is irrelevant for a learning tool but would rule out any form of latency-sensitive trading. That would need colocation, as discussed in [1, 6]. The design scales by partitioning the event bus by symbol, not by tuning a single process.
 
-**Does the AI add value?** Statistically, a little. The model beats the majority, random and momentum baselines on macro-F1 and directional precision, and its confidence ranks predictions well. However, it does not beat logistic regression, and its gross edge per trade (about 4–5 bps) is smaller than realistic costs. This is consistent with the difficulty of short-horizon prediction from public bar data alone, and it supports the original design principle that *a prediction must not directly trigger a trade*. The most valuable parts of PredictX in this prototype are its explanations (why the model leans one way) and its honest model card.
+**Does the AI add value?** Statistically, a little. The model beats the majority, random and momentum baselines on macro-F1 and directional precision, and its confidence ranks predictions well. However, it does not beat logistic regression, training on 13 times more stocks did not improve it (Experiment D2), and its gross edge per trade (about 2–3 bps) is smaller than realistic costs. This is consistent with the difficulty of short-horizon prediction from public bar data alone, and it supports the original design principle that *a prediction must not directly trigger a trade*. The most valuable parts of PredictX in this prototype are its explanations (why the model leans one way) and its honest model card.
 
-**Does RiskGuard add value?** Yes, measurably. Applied to the same signals, it raised returns at every cost level, cut the zero-cost drawdown by two thirds, and resolved 60% of trades through stops and targets, while costing about 22 µs per decision.
+**Does RiskGuard add value?** Yes, measurably, though mainly as risk control. Applied to the same signals, it halved the zero-cost drawdown, raised the Sharpe ratio, took fewer than half the trades and gave better returns at every non-zero cost level. Without costs it gave up a little return (+4.5% vs +5.1%). It costs about 24 µs per decision.
 
 ## 9.2 Limitations
 
@@ -1547,9 +1571,9 @@ The prototype meets its engineering objectives, with measured evidence. Its pred
 
 TradeMind AI was designed, built, deployed and evaluated as a complete cloud-based market-intelligence pipeline:
 
-- **StreamX** captures every event with three nanosecond timestamps, keeps the hot path in memory and records asynchronously. On a two-core laptop it sustained 5,000 events/s with a P99 state-update latency of 29 µs and no data loss, and it saturated at about 8,800 events/s on one CPU core. In the cloud it ran at a median of 8.4 µs. Experiments showed that fixed 100 ms snapshots would hide 80–98% of the same events, and that synchronous fully durable writes would cut throughput to about 60 events/s.
-- **PredictX** trains an explainable XGBoost model on about 17,000 real NSE 5-minute bars with a purged chronological split. Its macro-F1 is 0.390 against 0.248 for the majority-class baseline, and its directional hit-rate is 25.6% against 20.4% chance. It matches, but does not beat, logistic regression.
-- **RiskGuard** turns every signal into a sized, bounded and explained decision in about 22 µs, and measurably improves the outcome of the same signals.
+- **StreamX** captures every event with three nanosecond timestamps, keeps the hot path in memory and records asynchronously. On a two-core laptop it sustained 5,000 events/s with a P99 state-update latency of 29 µs and no data loss, and it saturated at about 8,800 events/s on one CPU core. In the cloud it ran at a median of 10.5 µs. Experiments showed that fixed 100 ms snapshots would hide 80–98% of the same events, and that synchronous fully durable writes would cut throughput to about 60 events/s.
+- **PredictX** trains an explainable XGBoost model on about 220,000 real NSE 5-minute bars from the 51 Nifty 50 stocks, with a purged chronological split. Its macro-F1 is 0.372 against 0.252 for the majority-class baseline, and its directional hit-rate is 22.8% against 19.6% chance. It matches, but does not beat, logistic regression, and a model trained on only four stocks generalises to the other 47 just as well.
+- **RiskGuard** turns every signal into a sized, bounded and explained decision in about 24 µs. It halves the drawdown of the same signals and reduces their losses whenever costs are included.
 - The **paper-trading platform**, with Google sign-in, is publicly deployed with continuous delivery and has passed 18 unit tests and 116 end-to-end checks in production.
 
 The project's value lies in demonstrating a measurable, reproducible data-to-decision pipeline and reporting it honestly, including the finding that the model's small edge does not survive realistic transaction costs. It does not claim institutional HFT performance.
@@ -1603,14 +1627,14 @@ time,open,high,low,close,volume
 ```json
 {
   "symbol": "RELIANCE", "signal": "NO_TRADE", "model_view": "SELL",
-  "confidence": 0.3203, "raw_confidence": 0.3703, "threshold": 0.3513,
+  "confidence": 0.3203, "raw_confidence": 0.3703, "threshold": 0.3559,
   "probabilities": {"SELL": 0.3703, "HOLD": 0.3021, "BUY": 0.3276},
   "market_pressure": "Positive", "imbalance": 0.53,
   "sentiment": {"score": 0.5, "label": "Positive"}, "annualised_volatility": 0.187,
   "top_factors": [{"feature": "atr_pct", "value": 0.0032, "contribution": 0.217,
                    "text": "Average true range is 0.32% of price, which supports SELL"}],
   "explanation": "The model leans SELL (37% raw probability) mainly because ...",
-  "horizon": "next 6 bars (~30 simulated minutes)", "model_version": "xgb-20261123-2022",
+  "horizon": "next 6 bars (~30 simulated minutes)", "model_version": "xgb-20261123-2328",
   "disclaimer": "Educational prototype. Confidence is not a probability of profit. Not financial advice."
 }
 ```
@@ -1655,10 +1679,67 @@ evaluate once on test; save the model and metrics.json (the model card)
 | Bus capacity | 100,000 events (10,000,000 in A, so that nothing is dropped) |
 | Recorder | Flush every 5 s or 20,000 rows; Snappy Parquet; background thread |
 | Metrics window | All events in the measurement window (benchmarks); last 10,000 (live monitor) |
-| Model | `backend/models/xgb_model.json`, version `xgb-20261123-2022`, threshold 0.3513 |
+| Model | `backend/models/xgb_model.json`, version `xgb-20261123-2328`, trained on 51 stocks, threshold 0.3559. The earlier four-stock model (D2) is the same file at git tag `v1.0.0` |
 | Costs (E) | 0 / 5 / 10 / 20 bps round trip, applied half per side |
 | API test (G) | 3 warm-up + 50 sequential requests per endpoint, keep-alive HTTPS; 41 WebSocket messages |
-| Raw results | `thesis/benchmarks/results/{environment, A_capture_interval, B_persistence, C_load, D_model, E_trading, F_decision_latency, G_api}.json` |
+| Raw results | `thesis/benchmarks/results/{environment, A_capture_interval, B_persistence, C_load, D_model, D2_model_comparison, E_trading, F_decision_latency, G_api}.json`; the earlier four-stock runs are kept as `*_4stocks.json` |
+| Stock universe | A–C: RELIANCE, TCS, INFY, HDFCBANK (streaming engine only, no model). D–G: all 51 Nifty 50 stocks |
+
+**Table A4.2: Experiment D: XGBoost results for every stock (sorted by macro-F1)**
+
+| # | Symbol | Test rows | Accuracy | Macro-F1 | Majority-class macro-F1 | Directional hit-rate |
+|---|---|---|---|---|---|---|
+| 1 | ONGC | 860 | 0.686 | 0.477 | 0.286 | 31.8% |
+| 2 | ASIANPAINT | 859 | 0.506 | 0.425 | 0.259 | 26.1% |
+| 3 | SBILIFE | 858 | 0.495 | 0.417 | 0.257 | 25.5% |
+| 4 | CIPLA | 859 | 0.541 | 0.412 | 0.280 | 21.8% |
+| 5 | POWERGRID | 859 | 0.487 | 0.403 | 0.255 | 24.9% |
+| 6 | JSWSTEEL | 860 | 0.451 | 0.402 | 0.243 | 28.4% |
+| 7 | INDIGO | 857 | 0.459 | 0.395 | 0.256 | 25.6% |
+| 8 | ETERNAL | 860 | 0.419 | 0.392 | 0.241 | 27.0% |
+| 9 | BEL | 860 | 0.501 | 0.388 | 0.269 | 22.1% |
+| 10 | TITAN | 858 | 0.439 | 0.384 | 0.251 | 24.6% |
+| 11 | BAJAJ-AUTO | 858 | 0.431 | 0.382 | 0.254 | 24.7% |
+| 12 | INFY | 859 | 0.425 | 0.382 | 0.235 | 25.8% |
+| 13 | TECHM | 858 | 0.431 | 0.381 | 0.244 | 25.3% |
+| 14 | TCS | 858 | 0.417 | 0.380 | 0.238 | 25.5% |
+| 15 | WIPRO | 861 | 0.469 | 0.377 | 0.255 | 22.6% |
+| 16 | NESTLEIND | 859 | 0.427 | 0.377 | 0.247 | 25.0% |
+| 17 | APOLLOHOSP | 858 | 0.467 | 0.375 | 0.260 | 20.4% |
+| 18 | HINDALCO | 860 | 0.385 | 0.374 | 0.229 | 29.1% |
+| 19 | TATACONSUM | 860 | 0.445 | 0.372 | 0.258 | 21.9% |
+| 20 | M&M | 859 | 0.388 | 0.372 | 0.234 | 27.5% |
+| 21 | JIOFIN | 861 | 0.459 | 0.371 | 0.250 | 21.9% |
+| 22 | HINDUNILVR | 859 | 0.499 | 0.371 | 0.266 | 19.6% |
+| 23 | TATASTEEL | 860 | 0.386 | 0.370 | 0.235 | 27.1% |
+| 24 | ITC | 861 | 0.443 | 0.370 | 0.255 | 23.2% |
+| 25 | BAJAJFINSV | 859 | 0.438 | 0.368 | 0.258 | 21.3% |
+| 26 | BHARTIARTL | 859 | 0.477 | 0.367 | 0.268 | 19.8% |
+| 27 | TRENT | 858 | 0.383 | 0.365 | 0.240 | 25.0% |
+| 28 | COALINDIA | 860 | 0.569 | 0.362 | 0.280 | 16.2% |
+| 29 | NTPC | 859 | 0.466 | 0.362 | 0.256 | 21.2% |
+| 30 | MARUTI | 858 | 0.397 | 0.361 | 0.249 | 22.8% |
+| 31 | RELIANCE | 861 | 0.475 | 0.361 | 0.272 | 19.2% |
+| 32 | MAXHEALTH | 858 | 0.359 | 0.356 | 0.226 | 27.2% |
+| 33 | SBIN | 860 | 0.404 | 0.355 | 0.249 | 21.2% |
+| 34 | SUNPHARMA | 859 | 0.444 | 0.350 | 0.255 | 20.1% |
+| 35 | ULTRACEMCO | 856 | 0.475 | 0.349 | 0.264 | 18.3% |
+| 36 | GRASIM | 858 | 0.379 | 0.349 | 0.244 | 23.3% |
+| 37 | KOTAKBANK | 860 | 0.364 | 0.348 | 0.238 | 24.6% |
+| 38 | ADANIPORTS | 859 | 0.478 | 0.346 | 0.280 | 14.9% |
+| 39 | DRREDDY | 860 | 0.502 | 0.344 | 0.270 | 18.5% |
+| 40 | HDFCBANK | 860 | 0.400 | 0.340 | 0.246 | 20.1% |
+| 41 | AXISBANK | 860 | 0.387 | 0.340 | 0.243 | 20.0% |
+| 42 | HCLTECH | 860 | 0.360 | 0.336 | 0.233 | 23.1% |
+| 43 | EICHERMOT | 859 | 0.353 | 0.336 | 0.233 | 23.0% |
+| 44 | HEROMOTOCO | 859 | 0.378 | 0.335 | 0.247 | 20.9% |
+| 45 | HDFCLIFE | 859 | 0.357 | 0.335 | 0.242 | 22.2% |
+| 46 | BAJFINANCE | 860 | 0.345 | 0.330 | 0.242 | 21.8% |
+| 47 | ADANIENT | 858 | 0.346 | 0.322 | 0.248 | 20.5% |
+| 48 | LT | 858 | 0.466 | 0.317 | 0.267 | 13.7% |
+| 49 | TMPV | 860 | 0.331 | 0.314 | 0.233 | 21.2% |
+| 50 | ICICIBANK | 858 | 0.408 | 0.309 | 0.258 | 15.3% |
+| 51 | SHRIRAMFIN | 860 | 0.291 | 0.281 | 0.230 | 19.9% |
 
 ## Appendix 5: Screenshots
 
@@ -1693,7 +1774,10 @@ From the repository root, on Windows, with the backend virtual environment:
 cd backend; python -m venv .venv; .\.venv\Scripts\pip install -r requirements.txt matplotlib psutil; cd ..
 backend\.venv\Scripts\python.exe -m pytest backend\tests -q              # 18 unit tests
 backend\.venv\Scripts\python.exe thesis\benchmarks\bench_stream.py       # env + Experiments A, B, C (~8 min)
-backend\.venv\Scripts\python.exe thesis\benchmarks\bench_model.py        # Experiments D, E, F (~3 min)
+cd backend; .\.venv\Scripts\python.exe -m scripts.fetch_universe; .\.venv\Scripts\python.exe -m app.predictx.train; cd ..   # 51 stocks, ~12 s training
+backend\.venv\Scripts\python.exe thesis\benchmarks\bench_model.py        # Experiments D, E, F (~20 min)
+git show v1.0.0:backend/models/xgb_model.json > thesis\benchmarks\xgb_4stocks.json
+cd thesis\benchmarks; ..\..\backend\.venv\Scripts\python.exe compare_models.py xgb_4stocks.json; cd ..\..   # Experiment D2
 backend\.venv\Scripts\python.exe thesis\benchmarks\bench_api.py          # Experiment G (local + cloud)
 backend\.venv\Scripts\python.exe thesis\benchmarks\make_figures.py       # figures -> thesis/figures/
 ```

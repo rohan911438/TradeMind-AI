@@ -1,0 +1,67 @@
+{
+  "Original 4 stocks": {
+    "model_4_stocks": {
+      "rows": 3438,
+      "macro_f1": 0.3901,
+      "hit_rate": 0.2555,
+      "chance": 0.2035
+    },
+    "model_51_stocks": {
+      "rows": 3438,
+      "macro_f1": 0.3689,
+      "hit_rate": 0.2284,
+      "chance": 0.2035
+    }
+  },
+  "47 added stocks": {
+    "model_4_stocks": {
+      "rows": 40378,
+      "macro_f1": 0.3743,
+      "hit_rate": 0.235,
+      "chance": 0.1949
+    },
+    "model_51_stocks": {
+      "rows": 40378,
+      "macro_f1": 0.3723,
+      "hit_rate": 0.2281,
+      "chance": 0.195
+    }
+  },
+  "All 51 stocks": {
+    "model_4_stocks": {
+      "rows": 43816,
+      "macro_f1": 0.3755,
+      "hit_rate": 0.2366,
+      "chance": 0.1956
+    },
+    "model_51_stocks": {
+      "rows": 43816,
+      "macro_f1": 0.3721,
+      "hit_rate": 0.2281,
+      "chance": 0.1957
+    }
+  },
+  "bootstrap_macro_f1_diff_new_minus_old": {
+    "Original 4 stocks": {
+      "diff": -0.0216,
+      "ci95": [
+        -0.0398,
+        -0.0029
+      ]
+    },
+    "47 added stocks": {
+      "diff": -0.0023,
+      "ci95": [
+        -0.0075,
+        0.0026
+      ]
+    },
+    "All 51 stocks": {
+      "diff": -0.0035,
+      "ci95": [
+        -0.0083,
+        0.0012
+      ]
+    }
+  }
+}
