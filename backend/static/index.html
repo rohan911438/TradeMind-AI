@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TradeMind AI</title>
+  <meta name="description" content="Cloud-powered AI market intelligence and risk-aware paper trading." />
+  <link rel="icon" href="/img/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script src="/vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="/css/theme.css" />
+</head>
+<body class="overflow-x-hidden">
+
+<!-- ================= NAV ================= -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <nav class="mt-4 glass rounded-2xl flex items-center justify-between px-4 py-3">
+      <a href="/" class="flex items-center gap-2.5">
+        <img src="/img/logo.svg" class="w-8 h-8" alt="" />
+        <span class="font-display font-semibold text-lg">TradeMind<span class="text-[var(--mint)]"> AI</span></span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm muted">
+        <a href="#engines" class="hover:text-white transition">Engines</a>
+        <a href="#how" class="hover:text-white transition">How it works</a>
+        <a href="#stack" class="hover:text-white transition">Cloud stack</a>
+      </div>
+      <a href="/app" class="btn btn-primary !py-2">Launch app
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="relative noise overflow-hidden pt-36 pb-20">
+  <div class="absolute inset-0 bg-grid"></div>
+  <div class="orb mint" style="width:520px;height:520px;top:-120px;left:-120px"></div>
+  <div class="orb violet" style="width:600px;height:600px;top:-80px;right:-200px"></div>
+  <div class="orb sky" style="width:380px;height:380px;top:380px;left:40%"></div>
+
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-6 reveal">
+      <span class="pill"><span class="dot live"></span> Live simulated NSE feed · Cloud + AI</span>
+      <h1 class="font-display text-5xl sm:text-6xl xl:text-7xl font-semibold leading-[1.02] mt-6">
+        See the market.<br/>Understand it.<br/><span class="text-gradient">Trade it, risk-free.</span>
+      </h1>
+      <p class="mt-6 text-lg muted max-w-xl leading-relaxed">
+        TradeMind AI streams market events, explains what an AI model sees in them, checks every idea against a risk engine,
+        and lets you test it with <span class="text-white">₹10,00,000 of virtual capital</span>.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <a href="/app" class="btn btn-primary !px-6 !py-3 text-base">Start paper trading</a>
+        <a href="#how" class="btn btn-ghost !px-6 !py-3 text-base">See how it works</a>
+      </div>
+      <div class="mt-10 flex items-center gap-6 text-sm dim">
+        <div class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/></svg>No real money</div>
+        <div class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Sign in with Google</div>
+      </div>
+    </div>
+
+    <!-- live preview card -->
+    <div class="lg:col-span-6 reveal" style="transition-delay:.15s">
+      <div class="glass glow-border rounded-3xl p-5 shadow-2xl shadow-black/50">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="label">RELIANCE · NSE</div>
+            <div class="flex items-baseline gap-3 mt-1">
+              <span id="h-price" class="num text-3xl font-semibold">—</span>
+              <span id="h-chg" class="num text-sm">—</span>
+            </div>
+          </div>
+          <div id="h-signal" class="rounded-xl px-4 py-2 text-center border border-white/10">
+            <div class="label !text-[10px]">AI signal</div>
+            <div class="font-display text-xl font-bold">…</div>
+          </div>
+        </div>
+        <canvas id="h-spark" class="w-full mt-4" height="170"></canvas>
+        <div class="grid grid-cols-3 gap-3 mt-4">
+          <div class="card p-3"><div class="label !text-[10px]">Confidence</div><div id="h-conf" class="num text-lg mt-1">—</div></div>
+          <div class="card p-3"><div class="label !text-[10px]">Book pressure</div><div id="h-press" class="text-lg mt-1">—</div></div>
+          <div class="card p-3"><div class="label !text-[10px]">P99 latency</div><div id="h-lat" class="num text-lg mt-1">—</div></div>
+        </div>
+        <p id="h-expl" class="text-xs dim mt-4 leading-relaxed line-clamp-2">Connecting to StreamX…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ticker -->
+  <div class="relative mt-20 border-y border-white/5 bg-black/30 py-4 overflow-hidden">
+    <div id="ticker" class="marquee text-sm mono"></div>
+  </div>
+</section>
+
+<!-- ================= PROBLEM / STATS ================= -->
+<section class="relative py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid md:grid-cols-4 gap-4">
+    <div class="card p-6 reveal"><div class="font-display text-4xl font-semibold" id="s-eps">—</div><div class="muted text-sm mt-2">market events processed per second</div></div>
+    <div class="card p-6 reveal" style="transition-delay:.05s"><div class="font-display text-4xl font-semibold" id="s-p50">—</div><div class="muted text-sm mt-2">median processing latency</div></div>
+    <div class="card p-6 reveal" style="transition-delay:.1s"><div class="font-display text-4xl font-semibold">3</div><div class="muted text-sm mt-2">cooperating engines: data, AI, risk</div></div>
+    <div class="card p-6 reveal" style="transition-delay:.15s"><div class="font-display text-4xl font-semibold">₹10L</div><div class="muted text-sm mt-2">virtual capital per trader</div></div>
+  </div>
+</section>
+
+<!-- ================= ENGINES ================= -->
+<section id="engines" class="relative py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="max-w-2xl reveal">
+      <div class="label !text-[var(--mint)]">The three-engine architecture</div>
+      <h2 class="font-display text-4xl sm:text-5xl font-semibold mt-3">Observe. Understand. Protect.</h2>
+      <p class="muted mt-4 text-lg">Each engine has a single, clear responsibility. Together they turn a raw tick stream into a risk-checked decision.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5 mt-14">
+      <article class="card card-hover p-7 reveal">
+        <div class="w-12 h-12 rounded-2xl grid place-items-center bg-[rgba(92,200,255,.12)] text-[var(--sky)]">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        </div>
+        <div class="label mt-6">01 · Data engine</div>
+        <h3 class="font-display text-2xl font-semibold mt-1">StreamX</h3>
+        <p class="muted mt-3">Captures every tick and order-book update with nanosecond timestamps, keeps real-time market state and records history to Parquet.</p>
+        <ul class="mt-5 space-y-2 text-sm">
+          <li class="flex gap-2"><span class="text-[var(--sky)]">→</span>Event bus (Kafka-compatible)</li>
+          <li class="flex gap-2"><span class="text-[var(--sky)]">→</span>Order-book imbalance &amp; volatility</li>
+          <li class="flex gap-2"><span class="text-[var(--sky)]">→</span>P50 / P95 / P99 latency monitor</li>
+        </ul>
+      </article>
+      <article class="card card-hover p-7 reveal" style="transition-delay:.08s">
+        <div class="w-12 h-12 rounded-2xl grid place-items-center bg-[rgba(139,123,255,.14)] text-[var(--violet)]">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/></svg>
+        </div>
+        <div class="label mt-6">02 · AI engine</div>
+        <h3 class="font-display text-2xl font-semibold mt-1">PredictX</h3>
+        <p class="muted mt-3">An XGBoost model trained on real NSE price history produces BUY / SELL / HOLD / NO TRADE signals and explains why.</p>
+        <ul class="mt-5 space-y-2 text-sm">
+          <li class="flex gap-2"><span class="text-[var(--violet)]">→</span>10 technical features</li>
+          <li class="flex gap-2"><span class="text-[var(--violet)]">→</span>Per-prediction factor contributions</li>
+          <li class="flex gap-2"><span class="text-[var(--violet)]">→</span>Book pressure + news sentiment blend</li>
+        </ul>
+      </article>
+      <article class="card card-hover p-7 reveal" style="transition-delay:.16s">
+        <div class="w-12 h-12 rounded-2xl grid place-items-center bg-[rgba(92,255,176,.12)] text-[var(--mint)]">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <div class="label mt-6">03 · Risk engine</div>
+        <h3 class="font-display text-2xl font-semibold mt-1">RiskGuard</h3>
+        <p class="muted mt-3">A promising prediction never becomes a risky trade automatically. Every order is approved, reduced or rejected, with reasons.</p>
+        <ul class="mt-5 space-y-2 text-sm">
+          <li class="flex gap-2"><span class="text-[var(--mint)]">→</span>ATR stop-loss &amp; 1% risk sizing</li>
+          <li class="flex gap-2"><span class="text-[var(--mint)]">→</span>Risk/reward gate</li>
+          <li class="flex gap-2"><span class="text-[var(--mint)]">→</span>Exposure caps &amp; daily loss limit</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how" class="relative py-24 border-t border-white/5">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="max-w-2xl reveal">
+      <div class="label !text-[var(--mint)]">How it works</div>
+      <h2 class="font-display text-4xl sm:text-5xl font-semibold mt-3">From tick to trade in five steps</h2>
+    </div>
+    <ol class="mt-14 grid md:grid-cols-5 gap-4">
+      <li class="card p-6 reveal"><div class="num text-[var(--mint)] text-sm">01</div><h4 class="font-display text-lg font-semibold mt-3">Stream</h4><p class="text-sm muted mt-2">StreamX ingests price, quantity, bid and ask updates.</p></li>
+      <li class="card p-6 reveal" style="transition-delay:.05s"><div class="num text-[var(--mint)] text-sm">02</div><h4 class="font-display text-lg font-semibold mt-3">Process</h4><p class="text-sm muted mt-2">Market state, candles, imbalance and volatility update in microseconds.</p></li>
+      <li class="card p-6 reveal" style="transition-delay:.1s"><div class="num text-[var(--mint)] text-sm">03</div><h4 class="font-display text-lg font-semibold mt-3">Predict</h4><p class="text-sm muted mt-2">PredictX scores the setup and explains the top drivers.</p></li>
+      <li class="card p-6 reveal" style="transition-delay:.15s"><div class="num text-[var(--mint)] text-sm">04</div><h4 class="font-display text-lg font-semibold mt-3">Guard</h4><p class="text-sm muted mt-2">RiskGuard sizes the position and checks every limit.</p></li>
+      <li class="card p-6 reveal" style="transition-delay:.2s"><div class="num text-[var(--mint)] text-sm">05</div><h4 class="font-display text-lg font-semibold mt-3">Paper trade</h4><p class="text-sm muted mt-2">Execute with virtual money and track live P&amp;L.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= STACK ================= -->
+<section id="stack" class="relative py-24 border-t border-white/5">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-start">
+    <div class="reveal">
+      <div class="label !text-[var(--mint)]">Cloud-native by design</div>
+      <h2 class="font-display text-4xl sm:text-5xl font-semibold mt-3">Built like the systems it learns from</h2>
+      <p class="muted mt-4 text-lg">A stateless API, an event-driven pipeline and columnar storage. Every prototype component maps to a managed cloud service.</p>
+      <div class="flex flex-wrap gap-2 mt-8">
+        <span class="pill">Python · FastAPI</span><span class="pill">WebSockets</span><span class="pill">XGBoost</span>
+        <span class="pill">Parquet</span><span class="pill">SQLite → PostgreSQL</span><span class="pill">Docker</span>
+        <span class="pill">Google OAuth</span><span class="pill">TradingView Lightweight Charts</span>
+      </div>
+    </div>
+    <div class="card overflow-hidden reveal">
+      <table class="tbl">
+        <thead><tr><th>Prototype</th><th>Cloud equivalent</th></tr></thead>
+        <tbody>
+          <tr><td>In-memory event bus</td><td class="text-[var(--mint)]">Apache Kafka / AWS MSK</td></tr>
+          <tr><td>Parquet event files</td><td class="text-[var(--mint)]">Amazon S3 data lake</td></tr>
+          <tr><td>SQLite accounts</td><td class="text-[var(--mint)]">Amazon RDS PostgreSQL</td></tr>
+          <tr><td>In-memory market state</td><td class="text-[var(--mint)]">Redis / ElastiCache</td></tr>
+          <tr><td>Docker container</td><td class="text-[var(--mint)]">ECS / App Runner</td></tr>
+          <tr><td>FastAPI</td><td class="text-[var(--mint)]">API Gateway + containers</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="relative py-24">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="relative overflow-hidden rounded-3xl glass glow-border p-10 sm:p-16 text-center reveal">
+      <div class="orb mint" style="width:400px;height:400px;bottom:-200px;left:-100px"></div>
+      <div class="orb violet" style="width:400px;height:400px;top:-200px;right:-100px"></div>
+      <h2 class="relative font-display text-4xl sm:text-5xl font-semibold">Test your next idea<br/>before it costs you.</h2>
+      <p class="relative muted mt-4 text-lg">Sign in with Google and get your own ₹10,00,000 paper account in seconds.</p>
+      <a href="/app" class="relative btn btn-primary !px-8 !py-3.5 text-base mt-8">Open TradeMind AI</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-white/5">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12 grid md:grid-cols-3 gap-8 text-sm">
+    <div>
+      <div class="flex items-center gap-2.5"><img src="/img/logo.svg" class="w-7 h-7" alt="" /><span class="font-display font-semibold">TradeMind AI</span></div>
+      <p class="dim mt-3 max-w-xs">An educational cloud + AI research prototype inspired by high-frequency trading architecture.</p>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="space-y-2"><div class="label">Product</div><a href="/app" class="block muted hover:text-white">Dashboard</a><a href="#engines" class="block muted hover:text-white">Engines</a></div>
+      <div class="space-y-2"><div class="label">Project</div><a href="https://github.com/rohan911438/TradeMind-AI" class="block muted hover:text-white">GitHub</a><a href="/docs" class="block muted hover:text-white">API docs</a></div>
+    </div>
+    <p class="dim text-xs leading-relaxed">Educational prototype. Market feed is simulated from real historical prices. AI confidence is not a probability of profit. Nothing here is financial advice.</p>
+  </div>
+</footer>
+
+<script src="/js/landing.js"></script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TradeMind AI · Terminal</title>
+  <link rel="icon" href="/img/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script src="/vendor/tailwind.js"></script>
+  <script src="/vendor/lightweight-charts.js"></script>
+  <script src="/vendor/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/css/theme.css" />
+  <style>
+    .nav-btn { display:flex; align-items:center; gap:12px; width:100%; padding:10px 12px; border-radius:12px; color:var(--muted); font-size:14px; font-weight:500; transition:all .15s; }
+    .nav-btn:hover { background:rgba(255,255,255,.04); color:#fff; }
+    .nav-btn.active { background:rgba(92,255,176,.08); color:var(--mint); box-shadow: inset 2px 0 0 var(--mint); }
+    .page { display:none; } .page.active { display:block; animation: fadein .35s ease; }
+    @keyframes fadein { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform:none; } }
+    .sym-card.active { border-color: rgba(92,255,176,.45); background: rgba(92,255,176,.05); }
+    .bar-track { height:8px; border-radius:99px; background:rgba(255,255,255,.06); overflow:hidden; }
+    .seg-btn { padding:8px 14px; border-radius:10px; font-size:13px; font-weight:600; color:var(--muted); }
+    .seg-btn.active { background:rgba(255,255,255,.08); color:#fff; }
+    .toast { animation: slidein .3s ease; }
+    @keyframes slidein { from { transform: translateY(20px); opacity:0 } to { transform:none; opacity:1 } }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ================= AUTH GATE ================= -->
+<div id="auth" class="fixed inset-0 z-[60] hidden noise overflow-hidden bg-[var(--bg)]">
+  <div class="absolute inset-0 bg-grid"></div>
+  <div class="orb mint" style="width:500px;height:500px;top:-150px;left:-150px"></div>
+  <div class="orb violet" style="width:600px;height:600px;bottom:-250px;right:-200px"></div>
+  <div class="relative min-h-full grid place-items-center p-4">
+    <div class="glass glow-border rounded-3xl p-8 sm:p-10 w-full max-w-md text-center">
+      <img src="/img/logo.svg" class="w-14 h-14 mx-auto" alt="" />
+      <h1 class="font-display text-3xl font-semibold mt-5">Welcome to TradeMind AI</h1>
+      <p class="muted mt-2">Sign in to get your own ₹10,00,000 paper-trading account.</p>
+      <div class="mt-8 space-y-3">
+        <div id="g-btn-wrap" class="flex justify-center min-h-[44px]"></div>
+        <p id="g-missing" class="hidden text-xs dim">Google sign-in is not configured on this server yet.</p>
+        <div class="flex items-center gap-3 dim text-xs"><div class="flex-1 h-px bg-white/10"></div>or<div class="flex-1 h-px bg-white/10"></div></div>
+        <button id="guest-btn" class="btn btn-ghost w-full !py-3">Continue as guest</button>
+      </div>
+      <p class="text-[11px] dim mt-8">Paper trading only: no real money, no broker connection. Not financial advice.</p>
+      <a href="/" class="inline-block text-xs muted hover:text-white mt-3">← Back to home</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SHELL ================= -->
+<div id="shell" class="flex min-h-screen">
+  <!-- sidebar -->
+  <aside class="hidden lg:flex w-60 shrink-0 flex-col border-r border-white/5 bg-[var(--bg-2)] p-4 sticky top-0 h-screen">
+    <a href="/" class="flex items-center gap-2.5 px-2 py-2">
+      <img src="/img/logo.svg" class="w-8 h-8" alt="" />
+      <span class="font-display font-semibold text-lg">TradeMind<span class="text-[var(--mint)]"> AI</span></span>
+    </a>
+    <nav class="mt-8 space-y-1" id="nav">
+      <button class="nav-btn active" data-page="dashboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Market</button>
+      <button class="nav-btn" data-page="signals"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>AI Signals</button>
+      <button class="nav-btn" data-page="trade"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>Paper Trade</button>
+      <button class="nav-btn" data-page="portfolio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/></svg>Portfolio &amp; Risk</button>
+      <button class="nav-btn" data-page="monitor"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>StreamX Monitor</button>
+      <button class="nav-btn" data-page="about"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Architecture</button>
+    </nav>
+    <div class="mt-auto card p-4">
+      <div class="label">Account equity</div>
+      <div id="side-equity" class="num text-xl font-semibold mt-1">—</div>
+      <div id="side-pnl" class="num text-xs mt-1">—</div>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <!-- topbar -->
+    <header class="sticky top-0 z-40 border-b border-white/5 bg-[rgba(6,8,12,.75)] backdrop-blur-xl">
+      <div class="flex items-center gap-3 px-4 sm:px-6 h-16">
+        <select id="mobile-nav" class="input !w-auto lg:hidden">
+          <option value="dashboard">Market</option><option value="signals">AI Signals</option><option value="trade">Paper Trade</option>
+          <option value="portfolio">Portfolio &amp; Risk</option><option value="monitor">StreamX Monitor</option><option value="about">Architecture</option>
+        </select>
+        <h2 id="page-title" class="font-display text-xl font-semibold hidden sm:block">Market</h2>
+        <span class="pill !py-1 ml-2" title="Prices are simulated from real NSE history. 1 candle = one 5-minute bar, compressed to 10 seconds.">
+          <span id="conn-dot" class="dot live"></span><span id="feed-label">SIMULATED FEED · 1 bar = 10s</span>
+        </span>
+        <div class="ml-auto flex items-center gap-3">
+          <div id="clock" class="num text-sm dim hidden md:block"></div>
+          <div class="relative">
+            <button id="user-btn" class="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-white/5">
+              <img id="user-pic" class="w-8 h-8 rounded-full hidden" alt="" referrerpolicy="no-referrer" />
+              <div id="user-initial" class="w-8 h-8 rounded-full grid place-items-center bg-[rgba(139,123,255,.25)] text-sm font-semibold">G</div>
+              <span id="user-name" class="text-sm hidden sm:block">—</span>
+            </button>
+            <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 glass rounded-xl p-2 text-sm">
+              <div id="user-email" class="px-3 py-2 dim text-xs truncate"></div>
+              <button id="logout-btn" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-4 sm:p-6 max-w-[1600px] mx-auto">
+
+      <!-- =============== DASHBOARD =============== -->
+      <section id="page-dashboard" class="page active">
+        <div id="watchlist" class="grid grid-cols-2 xl:grid-cols-4 gap-3"></div>
+        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+          <div class="xl:col-span-8 card p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="label" id="chart-sym-label">RELIANCE · NSE</div>
+                <div class="flex items-baseline gap-3 mt-1">
+                  <span id="chart-price" class="num text-3xl font-semibold">—</span>
+                  <span id="chart-chg" class="num text-sm">—</span>
+                </div>
+              </div>
+              <div class="flex gap-6 text-sm">
+                <div><div class="label">Bid</div><div id="chart-bid" class="num up mt-0.5">—</div></div>
+                <div><div class="label">Ask</div><div id="chart-ask" class="num down mt-0.5">—</div></div>
+                <div><div class="label">Spread</div><div id="chart-spread" class="num mt-0.5">—</div></div>
+                <div><div class="label">Ann. vol</div><div id="chart-vol" class="num mt-0.5">—</div></div>
+              </div>
+            </div>
+            <div id="chart" class="mt-4 h-[440px]"></div>
+            <p class="text-[11px] dim mt-2">History = real NSE 5-minute bars. Live candles = simulated continuation (StreamX). Each live candle represents one 5-minute bar, compressed to 10 seconds.</p>
+          </div>
+          <div class="xl:col-span-4 space-y-4">
+            <div class="card p-4">
+              <div class="flex items-center justify-between"><div class="label">AI signal</div><button data-goto="signals" class="text-xs muted hover:text-white">Details →</button></div>
+              <div class="flex items-center justify-between mt-3">
+                <div id="mini-signal" class="font-display text-3xl font-bold">…</div>
+                <div class="text-right"><div id="mini-conf" class="num text-xl">—</div><div class="text-xs dim">confidence</div></div>
+              </div>
+              <p id="mini-expl" class="text-xs muted mt-3 leading-relaxed line-clamp-3"></p>
+              <div class="grid grid-cols-2 gap-2 mt-4">
+                <button class="btn btn-buy" data-quick="BUY">Buy</button>
+                <button class="btn btn-sell" data-quick="SELL">Sell</button>
+              </div>
+            </div>
+            <div class="card p-4">
+              <div class="flex items-center justify-between"><div class="label">Order book · top 5</div><div id="book-imb" class="num text-xs">—</div></div>
+              <div id="orderbook" class="mt-3 text-sm num"></div>
+              <div class="mt-4">
+                <div class="flex justify-between text-[11px] dim"><span>Sell pressure</span><span>Order-book imbalance</span><span>Buy pressure</span></div>
+                <div class="relative bar-track mt-1.5 !h-2.5" style="background:linear-gradient(90deg,rgba(255,92,122,.4),rgba(255,255,255,.06) 50%,rgba(34,213,139,.4))">
+                  <div id="imb-marker" class="absolute top-[-3px] w-1.5 h-4 rounded bg-white transition-all duration-300" style="left:50%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== SIGNALS =============== -->
+      <section id="page-signals" class="page">
+        <div class="flex flex-wrap items-center gap-2" id="sig-syms"></div>
+        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+          <div class="xl:col-span-7 space-y-4">
+            <div id="sig-card" class="card glow-border p-6 relative overflow-hidden">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div class="label" id="sig-sym">—</div>
+                  <div id="sig-signal" class="font-display text-6xl font-bold mt-2">…</div>
+                  <div class="text-sm muted mt-2" id="sig-horizon"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-sm min-w-[260px]">
+                  <div class="card p-3"><div class="label !text-[10px]">Confidence</div><div id="sig-conf" class="num text-2xl mt-1">—</div></div>
+                  <div class="card p-3"><div class="label !text-[10px]">Book pressure</div><div id="sig-press" class="text-lg mt-1">—</div></div>
+                  <div class="card p-3"><div class="label !text-[10px]">Sentiment</div><div id="sig-sent" class="text-lg mt-1">—</div></div>
+                  <div class="card p-3"><div class="label !text-[10px]">Risk level</div><div id="sig-risk" class="text-lg mt-1">—</div></div>
+                </div>
+              </div>
+              <div class="mt-6">
+                <div class="flex justify-between text-xs dim mb-1.5"><span>SELL</span><span>HOLD</span><span>BUY</span></div>
+                <div id="sig-probs" class="flex h-3 rounded-full overflow-hidden"></div>
+                <div id="sig-probs-txt" class="flex justify-between text-xs num mt-1.5"></div>
+              </div>
+              <div class="mt-6">
+                <div class="label">AI explanation</div>
+                <p id="sig-expl" class="mt-2 leading-relaxed"></p>
+              </div>
+              <div class="mt-6 flex flex-wrap items-center gap-3">
+                <button id="sig-refresh" class="btn btn-ghost">↻ Re-analyse</button>
+                <button id="sig-trade" class="btn btn-primary">Test this signal in Paper Trade →</button>
+                <span id="sig-updated" class="text-xs dim"></span>
+              </div>
+              <p class="text-[11px] dim mt-5" id="sig-disclaimer"></p>
+            </div>
+            <div class="card p-6">
+              <div class="label">Top contributing factors (this prediction)</div>
+              <div id="sig-factors" class="mt-4 space-y-4"></div>
+            </div>
+          </div>
+          <div class="xl:col-span-5 space-y-4">
+            <div class="card p-6">
+              <div class="flex items-center justify-between"><div class="label">News sentiment</div><span class="pill !py-0.5 !text-[10px]">sample headlines</span></div>
+              <div id="sig-heads" class="mt-4 space-y-2.5 text-sm"></div>
+              <p class="text-[11px] dim mt-4">Headlines are illustrative samples, not real news. Scored with a finance lexicon; FinBERT is the planned upgrade.</p>
+            </div>
+            <div class="card p-6">
+              <div class="label">Model performance (held-out test set)</div>
+              <div id="model-info" class="mt-4 text-sm"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== TRADE =============== -->
+      <section id="page-trade" class="page">
+        <div class="grid xl:grid-cols-12 gap-4">
+          <div class="xl:col-span-4 space-y-4">
+            <div class="card p-5">
+              <div class="label">Order ticket</div>
+              <div class="mt-4 space-y-4">
+                <div>
+                  <label class="text-xs muted">Symbol</label>
+                  <select id="t-sym" class="input mt-1"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-black/30 border border-white/5">
+                  <button class="seg-btn active" data-side="BUY">Buy</button>
+                  <button class="seg-btn" data-side="SELL">Sell</button>
+                </div>
+                <div>
+                  <div class="flex justify-between"><label class="text-xs muted">Quantity (shares)</label><button id="t-suggest" class="text-xs text-[var(--mint)] hover:underline">Use suggested size</button></div>
+                  <input id="t-qty" type="number" min="1" class="input mt-1 num" placeholder="e.g. 50" />
+                </div>
+                <div class="card p-3 text-sm flex items-center justify-between">
+                  <div><div class="label !text-[10px]">Market price</div><div id="t-price" class="num mt-0.5">—</div></div>
+                  <div class="text-right"><div class="label !text-[10px]">Est. value</div><div id="t-value" class="num mt-0.5">—</div></div>
+                </div>
+                <div class="card p-3 text-sm flex items-center justify-between">
+                  <div><div class="label !text-[10px]">AI signal</div><div id="t-signal" class="font-semibold mt-0.5">—</div></div>
+                  <div class="text-right"><div class="label !text-[10px]">Confidence</div><div id="t-conf" class="num mt-0.5">—</div></div>
+                </div>
+                <button id="t-check" class="btn btn-ghost w-full">1 · Check with RiskGuard</button>
+                <button id="t-confirm" class="btn btn-primary w-full" disabled>2 · Place paper order</button>
+              </div>
+            </div>
+            <div id="t-verdict" class="card p-5 hidden"></div>
+          </div>
+          <div class="xl:col-span-8 space-y-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="acct-tiles"></div>
+            <div class="card p-5">
+              <div class="flex items-center justify-between"><div class="label">Open positions</div><span class="text-xs dim">marked to mid-price, live</span></div>
+              <div class="overflow-x-auto mt-3"><table class="tbl" id="pos-table"></table></div>
+            </div>
+            <div class="card p-5">
+              <div class="label">Order history</div>
+              <div class="overflow-x-auto mt-3 max-h-[420px] overflow-y-auto"><table class="tbl" id="orders-table"></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== PORTFOLIO & RISK =============== -->
+      <section id="page-portfolio" class="page">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="pf-tiles"></div>
+        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+          <div class="xl:col-span-8 card p-5">
+            <div class="label">Equity curve</div>
+            <div class="h-[300px] mt-3"><canvas id="equity-chart"></canvas></div>
+          </div>
+          <div class="xl:col-span-4 card p-5">
+            <div class="label">Exposure vs limits</div>
+            <div id="exposure" class="mt-4 space-y-4 text-sm"></div>
+          </div>
+          <div class="xl:col-span-7 card p-5">
+            <div class="label">Per-stock risk</div>
+            <div class="overflow-x-auto mt-3"><table class="tbl" id="risk-table"></table></div>
+          </div>
+          <div class="xl:col-span-5 card p-5">
+            <div class="flex items-center justify-between"><div class="label">RiskGuard rules</div><button id="reset-btn" class="text-xs text-[var(--down)] hover:underline">Reset account</button></div>
+            <div id="limits" class="mt-3 text-sm"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== MONITOR =============== -->
+      <section id="page-monitor" class="page">
+        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3" id="mon-tiles"></div>
+        <div class="grid xl:grid-cols-12 gap-4 mt-4">
+          <div class="xl:col-span-8 card p-5">
+            <div class="flex items-center justify-between"><div class="label">Throughput · events / second (last 2 min)</div></div>
+            <div class="h-[260px] mt-3"><canvas id="eps-chart"></canvas></div>
+          </div>
+          <div class="xl:col-span-4 card p-5">
+            <div class="label">Feed rate control</div>
+            <div class="flex items-baseline gap-2 mt-4"><span id="rate-val" class="num text-4xl font-semibold">200</span><span class="muted">events/sec</span></div>
+            <input id="rate" type="range" min="10" max="5000" step="10" value="200" class="w-full mt-4 accent-[#5cffb0]" />
+            <div class="flex justify-between text-xs dim num"><span>10</span><span>5,000</span></div>
+            <p class="text-xs muted mt-4">Raise the load and watch processing latency stay in microseconds. The recorder writes to Parquet in a background thread, so disk I/O never blocks processing.</p>
+          </div>
+          <div class="xl:col-span-6 card p-5">
+            <div class="label">Processing latency distribution (µs)</div>
+            <div class="h-[240px] mt-3"><canvas id="hist-chart"></canvas></div>
+          </div>
+          <div class="xl:col-span-6 card p-5">
+            <div class="label">Pipeline</div>
+            <div id="pipeline" class="mt-5"></div>
+            <div id="recorder" class="mt-5 text-sm"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== ABOUT =============== -->
+      <section id="page-about" class="page">
+        <div class="card p-6">
+          <div class="label !text-[var(--mint)]">System architecture</div>
+          <h3 class="font-display text-3xl font-semibold mt-2">Three engines, one cloud pipeline</h3>
+          <div class="grid md:grid-cols-5 gap-3 mt-8 items-stretch text-sm">
+            <div class="card p-4 text-center"><div class="label">Source</div><div class="font-semibold mt-2">Feed simulator</div><div class="dim text-xs mt-1">seeded from real NSE bars</div></div>
+            <div class="card p-4 text-center border-[rgba(92,200,255,.35)]"><div class="label text-[var(--sky)]">StreamX</div><div class="font-semibold mt-2">Event bus → processor</div><div class="dim text-xs mt-1">state · metrics · recorder</div></div>
+            <div class="card p-4 text-center border-[rgba(139,123,255,.35)]"><div class="label text-[var(--violet)]">PredictX</div><div class="font-semibold mt-2">XGBoost + explain</div><div class="dim text-xs mt-1">+ book pressure, sentiment</div></div>
+            <div class="card p-4 text-center border-[rgba(92,255,176,.35)]"><div class="label text-[var(--mint)]">RiskGuard</div><div class="font-semibold mt-2">Sizing &amp; limits</div><div class="dim text-xs mt-1">approve · reduce · reject</div></div>
+            <div class="card p-4 text-center"><div class="label">Paper broker</div><div class="font-semibold mt-2">Fills &amp; P&amp;L</div><div class="dim text-xs mt-1">per Google user</div></div>
+          </div>
+          <div class="grid lg:grid-cols-2 gap-6 mt-8">
+            <table class="tbl card overflow-hidden">
+              <thead><tr><th>Prototype component</th><th>Cloud equivalent</th></tr></thead>
+              <tbody>
+                <tr><td>In-memory asyncio event bus</td><td class="text-[var(--mint)]">Apache Kafka / AWS MSK</td></tr>
+                <tr><td>Parquet files (data/events)</td><td class="text-[var(--mint)]">Amazon S3 data lake</td></tr>
+                <tr><td>SQLite (users, accounts)</td><td class="text-[var(--mint)]">Amazon RDS PostgreSQL</td></tr>
+                <tr><td>In-memory market state</td><td class="text-[var(--mint)]">Redis / ElastiCache</td></tr>
+                <tr><td>Docker container</td><td class="text-[var(--mint)]">ECS / App Runner / EKS</td></tr>
+                <tr><td>Google Identity Services</td><td class="text-[var(--mint)]">OAuth 2.0 / OpenID Connect</td></tr>
+              </tbody>
+            </table>
+            <div class="text-sm muted space-y-3 leading-relaxed">
+              <p><span class="text-white font-semibold">Honest scope.</span> The live feed is simulated because no free real-time NSE tick feed exists. A real feed plugs into the same event-bus interface.</p>
+              <p>The model is trained on real NSE 5-minute bars with a time-ordered, purged train/validation/test split, so it never sees the future. Short-term prediction is noisy, which is exactly why RiskGuard sits between every signal and every order.</p>
+              <p>This is an educational prototype inspired by HFT architecture, not an exchange-grade system and not financial advice.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="toasts" class="fixed bottom-4 right-4 z-[70] space-y-2"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
